@@ -1,0 +1,5 @@
+# Pinned so generated files are byte-identical on every machine and in CI.
+datamodel-code-generator==0.103.0
+pydantic==2.14.4
+black==26.10.1
+isort==8.0.1

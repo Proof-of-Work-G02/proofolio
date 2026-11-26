@@ -2,6 +2,8 @@
 # Windows without make: run `python scripts/dev.py <target>` instead.
 PYTHON ?= python3
 
-.PHONY: up down smoke reset migrate ps logs
-up down smoke reset migrate ps logs:
+TARGETS := up down smoke reset migrate ps logs contracts-setup contracts-validate contracts-types contracts-check contracts-breaking
+
+.PHONY: $(TARGETS)
+$(TARGETS):
 	$(PYTHON) scripts/dev.py $@
