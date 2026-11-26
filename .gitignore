@@ -221,3 +221,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Proofolio monorepo
+node_modules/
+.venv/
+*.pyc
+.terraform/
+*.tfstate*
+.DS_Store

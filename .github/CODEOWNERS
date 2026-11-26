@@ -1,0 +1,21 @@
+# Default: the PM reviews anything not covered below.
+*                                  @SniperX11
+
+/apps/frontend/                    @Proof-of-Work-G02/frontend
+/packages/                         @Proof-of-Work-G02/frontend
+/services/render-worker/           @Proof-of-Work-G02/frontend
+
+/services/core-backend/            @Proof-of-Work-G02/backend
+/services/website-service/         @Proof-of-Work-G02/backend
+/infra/                            @Proof-of-Work-G02/backend
+/.github/                          @Proof-of-Work-G02/backend
+
+/services/cv-extraction/           @Proof-of-Work-G02/ai
+/services/linkedin-extraction/     @Proof-of-Work-G02/ai
+/services/github-analysis/         @Proof-of-Work-G02/ai
+/services/_shared/python/          @Proof-of-Work-G02/ai
+
+# Contracts: owned by all three teams. GitHub CODEOWNERS can't require every
+# listed team to approve, so a ruleset rule requires one approval from each team
+# on contracts/** (see repo Settings > Rules).
+/contracts/                        @Proof-of-Work-G02/frontend @Proof-of-Work-G02/backend @Proof-of-Work-G02/ai
