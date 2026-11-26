@@ -1,0 +1,21 @@
+# PR title rule from AGENTS.md: Conventional Commits, ending with a Jira key in brackets.
+# Runs again when the title is edited, so fixing the title fixes the check.
+name: pr-title
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+permissions: {}
+jobs:
+  pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if echo "$TITLE" | grep -Eq '^(feat|fix|chore|docs|test|refactor|ci|build)(\([a-z0-9-]+\))?: .+ \((FE|BE|AI|KAN)-[0-9]+\)$'; then
+            echo "ok: $TITLE"
+          else
+            echo "::error::Title must look like: feat(core): add job upload endpoint (BE-11). Types: feat fix chore docs test refactor ci build. Keys: FE- BE- AI- KAN-."
+            exit 1
+          fi

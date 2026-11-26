@@ -1,0 +1,20 @@
+# Branch naming rule from AGENTS.md: <frontend|backend|ai>/feature/<lowercase-name>.
+# (KAN-9 also allows fix/chore/docs; AGENTS.md wins until the docs change.)
+name: branch-name
+on:
+  pull_request:
+permissions: {}
+jobs:
+  branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          if echo "$BRANCH" | grep -Eq '^(frontend|backend|ai)/feature/[a-z0-9-]+$'; then
+            echo "ok: $BRANCH"
+          else
+            echo "::error::Branch \"$BRANCH\" must be <frontend|backend|ai>/feature/<name> (lowercase letters, digits, dashes)."
+            exit 1
+          fi

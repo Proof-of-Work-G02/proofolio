@@ -1,0 +1,22 @@
+# Nightly and on-demand checks (KAN-9). Not required checks on pull requests.
+#   * end-to-end test against the Compose stack with LLM_PROVIDER=fake (placeholder until KAN-11)
+#   * real-model evaluation (placeholder until AI-17; would cost money, so it stays off for now)
+# Scheduled workflows only run from the default branch, so this starts once it is on main.
+name: nightly
+on:
+  schedule:
+    - cron: "0 2 * * *" # 02:00 UTC
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: echo "Placeholder. KAN-11 replaces this with the end-to-end test (Compose stack, LLM_PROVIDER=fake)."
+  real-model-eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: echo "Placeholder. AI-17 replaces this; it calls a paid model, so enable it only when the team agrees."

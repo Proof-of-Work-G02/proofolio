@@ -1,0 +1,55 @@
+# AI service checks: ruff, mypy, pytest, evaluation with the fake LLM.
+#
+# Path-filtered (KAN-9): the real work only runs when the paths below change, but the
+# job named "ai-ci" always runs and reports, so a required check never waits forever.
+name: ai-ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.filter.outputs.run }}
+    steps:
+      # Pull requests: the filter asks the GitHub API for the changed files, no checkout needed.
+      - uses: actions/checkout@v7
+        if: github.event_name == 'push'
+      - id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            run:
+              - 'services/cv-extraction/**'
+              - 'services/linkedin-extraction/**'
+              - 'services/github-analysis/**'
+              - 'services/_shared/**'
+              - 'contracts/**'
+              - '.github/workflows/ai-ci.yml'
+  run:
+    name: ai-ci (run)
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Placeholder. Replaced by AI-7 once the AI services have code."
+  ai-ci:
+    needs: [changes, run]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pass unless a job above failed (skipped counts as passed)
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: $RESULTS"
+          case " $RESULTS " in
+            *" failure "*|*" cancelled "*) echo "A required job failed."; exit 1 ;;
+          esac

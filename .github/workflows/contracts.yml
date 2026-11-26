@@ -1,0 +1,68 @@
+# Contract checks (KAN-7 tooling): schemas and examples, generated types, breaking changes.
+#
+# Path-filtered (KAN-9): the real work only runs when the paths below change, but the
+# job named "contracts" always runs and reports, so a required check never waits forever.
+name: contracts
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.filter.outputs.run }}
+    steps:
+      # Pull requests: the filter asks the GitHub API for the changed files, no checkout needed.
+      - uses: actions/checkout@v7
+        if: github.event_name == 'push'
+      - id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            run:
+              - 'contracts/**'
+              - 'scripts/dev.py'
+              - 'Makefile'
+              - '.github/workflows/contracts.yml'
+  check:
+    name: contracts (run)
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Full history so the breaking-change check can read origin/main.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: contracts/tooling/package-lock.json
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: contracts/tooling/requirements.txt
+      - run: make contracts-setup contracts-check contracts-breaking
+  contracts:
+    needs: [changes, check]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pass unless a job above failed (skipped counts as passed)
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: $RESULTS"
+          case " $RESULTS " in
+            *" failure "*|*" cancelled "*) echo "A required job failed."; exit 1 ;;
+          esac

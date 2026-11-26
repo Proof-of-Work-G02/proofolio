@@ -1,0 +1,87 @@
+# Security checks on every PR and every push to main (KAN-9):
+#   * gitleaks: secrets in the commits this PR (or push) adds
+#   * dependency audit: known vulnerabilities in every npm lockfile and pip requirements file
+# CodeQL is left out: code scanning on private repos needs a paid GitHub plan.
+name: security
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  GITLEAKS_VERSION: 8.30.1
+  GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      # The plain binary, not gitleaks-action: the action needs a paid licence key for organisations.
+      - name: Install gitleaks
+        run: |
+          curl -sSfL -o gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf gitleaks.tar.gz -C "$RUNNER_TEMP" gitleaks
+          rm gitleaks.tar.gz
+      - name: Scan new commits
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            range="$PR_BASE..$PR_HEAD"
+          elif [ -n "$PUSH_BEFORE" ] && [ "$PUSH_BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            range="$PUSH_BEFORE..$GITHUB_SHA"
+          else
+            range="$GITHUB_SHA"
+          fi
+          echo "Scanning $range"
+          "$RUNNER_TEMP/gitleaks" git --log-opts="$range" --redact --verbose --exit-code 1 .
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: npm audit (high and critical)
+        run: |
+          status=0
+          for lock in $(git ls-files '*package-lock.json'); do
+            echo "::group::$lock"
+            (cd "$(dirname "$lock")" && npm audit --audit-level=high) || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+      - name: pip-audit
+        run: |
+          pip install -q pip-audit
+          status=0
+          for req in $(git ls-files '*requirements*.txt'); do
+            echo "::group::$req"
+            pip-audit -r "$req" --progress-spinner off || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+  security:
+    needs: [gitleaks, dependency-audit]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pass only if every security job passed
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Results: $RESULTS"
+          case " $RESULTS " in
+            *" failure "*|*" cancelled "*|*" skipped "*) echo "A security job did not pass."; exit 1 ;;
+          esac
