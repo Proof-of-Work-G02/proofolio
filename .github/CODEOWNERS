@@ -1,6 +1,8 @@
 # Default: the PM reviews anything not covered below.
 *                                  @SniperX11
 
+/docs/                             @Proof-of-Work-G02/frontend @Proof-of-Work-G02/backend @Proof-of-Work-G02/ai
+
 /apps/frontend/                    @Proof-of-Work-G02/frontend
 /packages/                         @Proof-of-Work-G02/frontend
 /services/render-worker/           @Proof-of-Work-G02/frontend
