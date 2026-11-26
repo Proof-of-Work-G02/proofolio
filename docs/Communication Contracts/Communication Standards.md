@@ -910,7 +910,7 @@ The local environment uses:
 - Docker Compose.
 - PostgreSQL.
 - ElasticMQ.
-- MinIO.
+- RustFS.
 - Service containers.
 
 Integration testing verifies:
@@ -1000,7 +1000,7 @@ Both environments preserve the same logical service boundaries and contracts.
 | HTTP services | Docker Compose | Selected AWS compute |
 | Render worker | Container run locally | AWS Lambda (container image) |
 | Message queues | ElasticMQ | Amazon SQS Standard |
-| Object storage | MinIO | Amazon S3 |
+| Object storage | RustFS | Amazon S3 |
 | Database | PostgreSQL Docker | Amazon RDS PostgreSQL |
 | Published websites | Local routing simulation | S3 + CloudFront |
 
