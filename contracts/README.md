@@ -13,7 +13,7 @@ validates against. If a schema and a doc disagree, that is a bug: report it, don
 | KAN-6 | Queue events, the error-code enum, statuses | `schemas/events/`, `schemas/common/` | Done |
 | KAN-14 | Documents: profile, extraction results, unified profile, website draft, sections, template manifest | `schemas/documents/` | Planned |
 | KAN-15 | HTTP API bodies and the render-worker call | `schemas/http/` | Planned |
-| KAN-7 | Validation command and generated TypeScript / Python types | tooling | Planned |
+| KAN-7 | Validation command, generated TypeScript / Python types, breaking-change check | `tooling/` | Done |
 
 ## Layout
 
@@ -133,4 +133,42 @@ taken over by the same owner's newer site (Database Architecture §5.10).
    remove or repurpose an enum value, tighten a pattern): raise `schemaVersion` and plan the
    consumer migration (Communication Standards §4.4). Because of `additionalProperties: false`,
    adding an optional field also needs consumers updated before producers send it.
-5. Validation must pass (see KAN-7 tooling once merged).
+5. Run `make contracts-check` (validation, regenerated types, type smoke test) and commit the
+   regenerated types. CI runs the same, plus `make contracts-breaking` against `main`.
+
+## Tooling (KAN-7)
+
+Needs Node 20+ and Python 3.12+. No Docker. On Windows use `python scripts/dev.py <target>`
+instead of `make <target>`.
+
+| Command | What it does |
+|---|---|
+| `make contracts-setup` | Installs the tooling once: `npm ci` in `contracts/tooling` and a Python venv with `datamodel-code-generator` |
+| `make contracts-validate` | Every schema compiles (ajv, strict, draft 2020-12); every `examples/<schema>.json` passes; every `examples/invalid/<schema>-<case>.json` fails |
+| `make contracts-types` | Regenerates the TypeScript and Python types. Commit the result |
+| `make contracts-check` | Validate, then fail if the committed types are stale, then type-check every valid example against the generated types |
+| `make contracts-breaking` | Compares the schemas with `origin/main` (or `--base <ref>`): fails on a removed field, a newly required field, a changed type, a removed enum value, a changed const or `$ref`, a tightened limit or pattern, or a deleted schema, unless that schema's `schemaVersion` went up |
+
+## Using the generated types
+
+The types are generated from the schemas and committed. **Never edit them by hand.**
+
+**TypeScript** (`packages/contract-types-ts`, types only):
+
+```ts
+import type { CvExtractRequested, ErrorCode } from "@proofolio/contract-types";
+```
+
+**Python** (`services/_shared/python/proofolio_contracts`, Pydantic v2 models; install with
+`pip install -e services/_shared/python`):
+
+```python
+from proofolio_contracts import CvExtractRequested, ErrorCode, ValidationError
+
+event = CvExtractRequested.model_validate_json(message_body)
+```
+
+Field names stay camelCase, exactly as on the wire. The generated types are for typing and
+parsing. Pydantic cannot express a few schema rules (the `Z` suffix on timestamps, the
+`https://` prefix on URLs), so a consumer that must enforce the whole contract validates
+against the JSON Schema itself (ajv in Node, `jsonschema` in Python).

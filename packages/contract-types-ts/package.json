@@ -1,0 +1,11 @@
+{
+  "name": "@proofolio/contract-types",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TypeScript types generated from contracts/schemas. Do not edit: run `make contracts-types`.",
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": { "types": "./src/index.ts" }
+  }
+}

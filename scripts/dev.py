@@ -8,6 +8,13 @@
     python scripts/dev.py migrate  run database migrations (Core first, then Website Service)
     python scripts/dev.py ps|logs  show containers / follow logs
 
+  Contracts (KAN-7), no Docker needed, Node 20+:
+    python scripts/dev.py contracts-setup     install the tooling (npm ci + Python venv), once
+    python scripts/dev.py contracts-validate  every schema compiles, valid examples pass, invalid ones fail
+    python scripts/dev.py contracts-types     regenerate TypeScript and Python types (commit the result)
+    python scripts/dev.py contracts-check     validate + generated types up to date + types smoke test
+    python scripts/dev.py contracts-breaking  breaking-change check against origin/main
+
 Uses .env when it exists, otherwise .env.example. Only needs Python 3.10+ and Docker.
 """
 
@@ -22,6 +29,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 COMPOSE_FILE = ROOT / "infra" / "compose" / "docker-compose.yml"
 INFRA_SERVICES = ["postgres", "elasticmq", "s3"]
+CONTRACT_TOOLING = ROOT / "contracts" / "tooling"
 
 # Migration histories, in the order they must run: websites has foreign keys to Core tables.
 MIGRATION_DIRS = [ROOT / "services" / "core-backend", ROOT / "services" / "website-service"]
@@ -103,6 +111,34 @@ def cmd_reset() -> None:
     cmd_up()
 
 
+def run(cmd: list[str], cwd: Path = CONTRACT_TOOLING) -> None:
+    print("+ " + " ".join(cmd), flush=True)
+    code = subprocess.call(cmd, cwd=cwd, shell=sys.platform == "win32" and cmd[0] == "npm")
+    if code != 0:
+        sys.exit(code)
+
+
+def node(script: str, *args: str) -> None:
+    if not (CONTRACT_TOOLING / "node_modules").exists():
+        sys.exit("Contract tooling is not installed. Run: python scripts/dev.py contracts-setup")
+    run(["node", script, *args])
+
+
+def cmd_contracts_setup() -> None:
+    run(["npm", "ci", "--no-audit", "--no-fund"])
+    venv = CONTRACT_TOOLING / ".venv"
+    if not venv.exists():
+        run([sys.executable, "-m", "venv", str(venv)])
+    py = venv / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+    run([str(py), "-m", "pip", "install", "-q", "-r", "requirements.txt"])
+
+
+def cmd_contracts_check() -> None:
+    node("validate.mjs")
+    node("generate-types.mjs", "--check")
+    node("test-types.mjs")
+
+
 COMMANDS = {
     "up": cmd_up,
     "down": cmd_down,
@@ -111,14 +147,20 @@ COMMANDS = {
     "migrate": cmd_migrate,
     "ps": lambda: compose("ps", "-a"),
     "logs": lambda: compose("logs", "-f", "--tail", "100"),
+    "contracts-setup": cmd_contracts_setup,
+    "contracts-validate": lambda: node("validate.mjs"),
+    "contracts-types": lambda: node("generate-types.mjs"),
+    "contracts-check": cmd_contracts_check,
+    "contracts-breaking": lambda: node("breaking-check.mjs", *sys.argv[2:]),
 }
+DOCKER_COMMANDS = {"up", "down", "smoke", "reset", "ps", "logs"}
 
 
 def main() -> None:
-    if len(sys.argv) != 2 or sys.argv[1] not in COMMANDS:
+    if len(sys.argv) < 2 or sys.argv[1] not in COMMANDS:
         print(__doc__)
         sys.exit(2)
-    if sys.argv[1] != "migrate":
+    if sys.argv[1] in DOCKER_COMMANDS:
         require_docker()
     COMMANDS[sys.argv[1]]()
 

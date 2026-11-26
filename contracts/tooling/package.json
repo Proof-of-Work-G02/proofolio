@@ -1,0 +1,20 @@
+{
+  "name": "@proofolio/contract-tooling",
+  "private": true,
+  "description": "Validation, type generation and breaking-change check for contracts/ (KAN-7)",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "validate": "node validate.mjs",
+    "types": "node generate-types.mjs",
+    "breaking": "node breaking-check.mjs"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "json-schema-to-typescript": "16.0.0",
+    "typescript": "5.9.3"
+  }
+}

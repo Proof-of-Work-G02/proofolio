@@ -1,0 +1,13 @@
+[project]
+name = "proofolio-shared"
+version = "0.1.0"
+description = "Shared Python libraries for Proofolio services"
+requires-python = ">=3.12"
+dependencies = ["pydantic>=2.11,<3"]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["proofolio_*"]
