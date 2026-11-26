@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/http/job-status-response.schema.json",
+  "title": "JobStatusResponse",
+  "description": "200 response of GET /api/jobs/{jobId}, and 202 response of POST /api/jobs/{jobId}/retry. HTTP API Contracts §3.2, §3.5.",
+  "type": "object",
+  "properties": {
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "status": {
+      "$ref": "../common/job-status.schema.json"
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/jobTask"
+      }
+    },
+    "websiteId": {
+      "$ref": "../common/fields.schema.json#/$defs/id",
+      "description": "Present once the website exists."
+    },
+    "warnings": {
+      "description": "Always present, empty by default. Skipped optional sources.",
+      "type": "array",
+      "items": {
+        "$ref": "../common/job-warning.schema.json"
+      }
+    },
+    "error": {
+      "$ref": "#/$defs/jobError"
+    },
+    "slug": {
+      "$ref": "../common/fields.schema.json#/$defs/slug",
+      "description": "Present once published."
+    },
+    "url": {
+      "$ref": "../common/fields.schema.json#/$defs/httpsUrl",
+      "description": "Present once published."
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "jobId",
+    "status",
+    "tasks",
+    "warnings"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "FAILED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "error"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "PUBLISHED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "websiteId",
+          "slug",
+          "url"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "jobTask": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "$ref": "../common/fields.schema.json#/$defs/id"
+        },
+        "sourceType": {
+          "$ref": "../common/source-type.schema.json"
+        },
+        "status": {
+          "$ref": "../common/task-status.schema.json"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "taskId",
+        "sourceType",
+        "status"
+      ]
+    },
+    "jobError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "$ref": "../common/error-code.schema.json"
+        },
+        "message": {
+          "$ref": "../common/fields.schema.json#/$defs/errorMessage"
+        },
+        "stage": {
+          "$ref": "../common/failure-stage.schema.json"
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Failure of a FAILED job, mapped from FailureInfo. Shared Data Contracts §3.3.",
+      "required": [
+        "code",
+        "message",
+        "stage",
+        "retryable"
+      ]
+    }
+  }
+}

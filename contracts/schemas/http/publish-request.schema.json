@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/http/publish-request.schema.json",
+  "title": "PublishRequest",
+  "description": "Body of POST /api/websites/{websiteId}/publish and POST /internal/websites/{websiteId}/publish. Reserved names (www, api, admin, app) are rejected by the service. HTTP API Contracts §3.4, §7.",
+  "type": "object",
+  "properties": {
+    "slug": {
+      "$ref": "../common/fields.schema.json#/$defs/slug"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "slug"
+  ]
+}

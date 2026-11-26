@@ -1,0 +1,251 @@
+openapi: 3.1.0
+info:
+  title: Proofolio Core Backend public API
+  version: 1.0.0
+  description: |
+    Frontend -> Core Backend. Owner: Core Backend (HTTP API Contracts §3, §8).
+    All endpoints need the `pf_session` cookie; POST requests also send `X-CSRF-Token`.
+    Every response carries `X-Request-Id`. Errors use ErrorResponse with a code from the
+    single error-code enum (contracts/schemas/common/error-code.schema.json).
+servers:
+  - url: http://localhost:8000
+    description: Local (docker compose)
+security:
+  - session: []
+tags:
+  - name: jobs
+  - name: websites
+  - name: templates
+paths:
+  /api/jobs:
+    post:
+      tags: [jobs]
+      operationId: createJob
+      summary: Submit sources and create a processing job
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [cv, templateId]
+              additionalProperties: false
+              properties:
+                cv:
+                  type: string
+                  contentMediaType: application/octet-stream
+                  description: The CV (PDF or DOCX).
+                githubUsername:
+                  type: string
+                  description: GitHub username or profile URL; normalized by the server.
+                linkedinPdf:
+                  type: string
+                  contentMediaType: application/pdf
+                  description: LinkedIn profile export (PDF).
+                templateId:
+                  type: string
+                  description: Template id from GET /api/templates. Unknown ids return 400.
+      responses:
+        "202":
+          description: Accepted. Processing has started, not finished.
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/create-job-response.schema.json" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "413": { $ref: "#/components/responses/FileTooLarge" }
+        "415": { $ref: "#/components/responses/UnsupportedFileType" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "500": { $ref: "#/components/responses/InternalError" }
+  /api/jobs/{jobId}:
+    get:
+      tags: [jobs]
+      operationId: getJob
+      summary: Job status (poll this)
+      parameters:
+        - $ref: "#/components/parameters/JobId"
+      responses:
+        "200":
+          description: Current status. `warnings` is always present; `error` when FAILED; `slug` and `url` once PUBLISHED.
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/job-status-response.schema.json" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /api/jobs/{jobId}/retry:
+    post:
+      tags: [jobs]
+      operationId: retryJob
+      summary: Retry a FAILED job whose failure is retryable
+      parameters:
+        - $ref: "#/components/parameters/JobId"
+        - $ref: "#/components/parameters/CsrfToken"
+      responses:
+        "202":
+          description: Retry started; same body as GET /api/jobs/{jobId}.
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/job-status-response.schema.json" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: JOB_NOT_RETRYABLE (not FAILED, or the failure is not retryable).
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/error-response.schema.json" }
+  /api/templates:
+    get:
+      tags: [templates]
+      operationId: listTemplates
+      summary: Available website templates (from registry.json)
+      responses:
+        "200":
+          description: Template cards for the picker.
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/template-list-response.schema.json" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+  /api/websites:
+    get:
+      tags: [websites]
+      operationId: listWebsites
+      summary: The signed-in user's websites (My sites), newest first
+      responses:
+        "200":
+          description: Possibly empty list.
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/website-list-response.schema.json" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+  /api/websites/{websiteId}/preview:
+    get:
+      tags: [websites]
+      operationId: getWebsitePreview
+      summary: The generated draft, for the preview page
+      parameters:
+        - $ref: "#/components/parameters/WebsiteId"
+      responses:
+        "200":
+          description: WebsitePreview (flat; never wrapped in a `draft` key).
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/website-preview.schema.json" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: NOT_READY (no draft yet).
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/error-response.schema.json" }
+  /api/websites/{websiteId}/publish:
+    post:
+      tags: [websites]
+      operationId: publishWebsite
+      summary: Publish under a slug (asynchronous)
+      parameters:
+        - $ref: "#/components/parameters/WebsiteId"
+        - $ref: "#/components/parameters/CsrfToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "../schemas/http/publish-request.schema.json" }
+      responses:
+        "200":
+          description: Already published with this slug (status PUBLISHED, url).
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/publish-response.schema.json" }
+        "202":
+          description: Accepted (status PUBLISHING). Poll GET /api/jobs/{jobId} for the result.
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/publish-response.schema.json" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: SLUG_TAKEN (another user owns the slug) or SLUG_CONFLICT (already published under another slug).
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/error-response.schema.json" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: pf_session
+      description: httpOnly, host-only session cookie set by the /auth flow (BE-10).
+  parameters:
+    JobId:
+      name: jobId
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+    WebsiteId:
+      name: websiteId
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+    CsrfToken:
+      name: X-CSRF-Token
+      in: header
+      required: true
+      description: Value of csrfToken from GET /auth/me. Missing or wrong gives 403 CSRF_INVALID.
+      schema: { type: string, minLength: 1 }
+  responses:
+    BadRequest:
+      description: BAD_REQUEST (malformed request, unknown templateId).
+      content:
+        application/json:
+          schema: { $ref: "../schemas/http/error-response.schema.json" }
+    Unauthenticated:
+      description: UNAUTHENTICATED (no or expired session).
+      content:
+        application/json:
+          schema: { $ref: "../schemas/http/error-response.schema.json" }
+    Forbidden:
+      description: FORBIDDEN or CSRF_INVALID.
+      content:
+        application/json:
+          schema: { $ref: "../schemas/http/error-response.schema.json" }
+    NotFound:
+      description: NOT_FOUND. Also returned for resources owned by another user, so ids cannot be probed.
+      content:
+        application/json:
+          schema: { $ref: "../schemas/http/error-response.schema.json" }
+    FileTooLarge:
+      description: FILE_TOO_LARGE.
+      content:
+        application/json:
+          schema: { $ref: "../schemas/http/error-response.schema.json" }
+    UnsupportedFileType:
+      description: UNSUPPORTED_FILE_TYPE.
+      content:
+        application/json:
+          schema: { $ref: "../schemas/http/error-response.schema.json" }
+    ValidationError:
+      description: VALIDATION_ERROR with `details` per field.
+      content:
+        application/json:
+          schema: { $ref: "../schemas/http/error-response.schema.json" }
+    RateLimited:
+      description: RATE_LIMITED; see the Retry-After header.
+      headers:
+        Retry-After:
+          schema: { type: integer, minimum: 1 }
+      content:
+        application/json:
+          schema: { $ref: "../schemas/http/error-response.schema.json" }
+    InternalError:
+      description: INTERNAL_ERROR (no stack traces).
+      content:
+        application/json:
+          schema: { $ref: "../schemas/http/error-response.schema.json" }

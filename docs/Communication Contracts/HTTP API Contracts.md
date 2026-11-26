@@ -438,7 +438,7 @@ All HTTP endpoints should use consistent status codes.
 }
 ```
 
-Error codes used by the API include `SLUG_TAKEN`, `SLUG_CONFLICT`, `PUBLISH_ASSET_ERROR`, `JOB_NOT_RETRYABLE` and `RATE_LIMITED`, plus the failure `errorCode` values in Shared Data Contracts §3.3.
+Error codes used by the API include `SLUG_TAKEN`, `SLUG_CONFLICT`, `PUBLISH_ASSET_ERROR`, `JOB_NOT_RETRYABLE` and `RATE_LIMITED`, the generic `BAD_REQUEST` (400), `UNAUTHENTICATED` (401), `FORBIDDEN` and `CSRF_INVALID` (403), `NOT_FOUND` (404), `NOT_READY` (409), `FILE_TOO_LARGE` (413), `UNSUPPORTED_FILE_TYPE` (415), `VALIDATION_ERROR` (422, with an optional `details` array of `{ field, message }`), `INTERNAL_ERROR` (500) and `SERVICE_UNAVAILABLE` (503), plus the failure `errorCode` values in Shared Data Contracts §3.3. The machine-readable list is `contracts/schemas/common/error-code.schema.json`.
 
 Error responses must not expose internal credentials, private documents, stack traces, or sensitive user information.
 

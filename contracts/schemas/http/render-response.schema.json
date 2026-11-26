@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/http/render-response.schema.json",
+  "title": "RenderResponse",
+  "description": "Render worker -> Website Publisher: the static files to upload under published-websites/<slug>/ (index.html last). Response limit 6 MB (Lambda); larger output fails with 500 PUBLISH_ASSET_ERROR. Errors use ErrorResponse: 422 VALIDATION_ERROR (invalid draft), 404 NOT_FOUND (unknown template or version), 500 PUBLISH_ASSET_ERROR.",
+  "type": "object",
+  "properties": {
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/renderedFile"
+      },
+      "minItems": 1
+    },
+    "rendererVersion": {
+      "description": "Renderer package version. Also sent as the X-Renderer-Version header in HTTP mode.",
+      "$ref": "../common/fields.schema.json#/$defs/semver"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "files"
+  ],
+  "$defs": {
+    "renderedFile": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "Path relative to the site root, for example index.html or assets/style.css. No leading slash, no '..'.",
+          "type": "string",
+          "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[A-Za-z0-9._/-]+$"
+        },
+        "contentType": {
+          "type": "string",
+          "pattern": "^[a-z]+/[a-z0-9.+-]+(; ?charset=[A-Za-z0-9-]+)?$"
+        },
+        "contentBase64": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "contentType",
+        "contentBase64"
+      ]
+    }
+  }
+}

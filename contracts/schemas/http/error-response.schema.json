@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/http/error-response.schema.json",
+  "title": "ErrorResponse",
+  "description": "Standard error body for every HTTP error (public and internal). Communication Standards §6.4, HTTP API Contracts §6.",
+  "type": "object",
+  "properties": {
+    "error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "$ref": "../common/error-code.schema.json"
+        },
+        "message": {
+          "$ref": "../common/fields.schema.json#/$defs/errorMessage"
+        },
+        "requestId": {
+          "description": "Value of X-Request-Id, for support and tracing.",
+          "type": "string",
+          "minLength": 1
+        },
+        "details": {
+          "description": "Field-level problems, only for 422 VALIDATION_ERROR.",
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string",
+                "minLength": 1
+              },
+              "message": {
+                "$ref": "../common/fields.schema.json#/$defs/errorMessage"
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "field",
+              "message"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "requestId"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "error"
+  ]
+}

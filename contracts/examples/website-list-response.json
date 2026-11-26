@@ -1,0 +1,14 @@
+{
+  "websites": [
+    {
+      "websiteId": "website-456",
+      "jobId": "job-456",
+      "status": "PUBLISHED",
+      "templateId": "classic",
+      "slug": "alex-popescu",
+      "url": "https://alex-popescu.ourdomain.com",
+      "createdAt": "2026-11-17T14:33:00Z",
+      "updatedAt": "2026-11-17T14:35:00Z"
+    }
+  ]
+}

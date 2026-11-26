@@ -70,7 +70,23 @@ function schemaVersionOf(schema, file, loader) {
 const asArray = (t) => (t === undefined ? [] : Array.isArray(t) ? t : [t]);
 const TIGHTER = { maxLength: "lower", maxItems: "lower", maximum: "lower", minLength: "higher", minItems: "higher", minimum: "higher" };
 
+// Local refs ("#/$defs/x") are replaced by their target before comparing, so moving a
+// definition into $defs is not reported as a change. `roots` holds the two documents.
+let roots = { old: null, new: null };
+function local(node, root, depth = 0) {
+  if (!node || typeof node !== "object" || typeof node.$ref !== "string" || !node.$ref.startsWith("#") || depth > 20) return node;
+  const target = node.$ref
+    .slice(1)
+    .split("/")
+    .filter(Boolean)
+    .reduce((n, k) => n?.[k.replaceAll("~1", "/").replaceAll("~0", "~")], root);
+  const { $ref, ...rest } = node;
+  return local({ ...target, ...rest }, root, depth + 1);
+}
+
 function compare(oldS, newS, path, out) {
+  oldS = local(oldS, roots.old);
+  newS = local(newS, roots.new);
   if (!oldS || typeof oldS !== "object") return;
   if (!newS || typeof newS !== "object") {
     out.push(`${path}: removed`);
@@ -135,6 +151,7 @@ for (const file of baseFiles) {
     continue;
   }
   const changes = [];
+  roots = { old: oldS, new: newS };
   compare(oldS, newS, "", changes);
   if (!changes.length) continue;
   const oldV = schemaVersionOf(oldS, file, loadBase);

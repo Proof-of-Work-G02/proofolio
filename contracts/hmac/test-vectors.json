@@ -1,0 +1,144 @@
+{
+  "description": "HMAC-SHA256 service-to-service signing test vectors (BE-10 scheme). Used in local HTTP mode by Core <-> Website Service and Website Publisher -> render worker. On AWS the render worker is invoked with IAM instead. See contracts/README.md 'Service-to-service signing'.",
+  "algorithm": "HMAC-SHA256",
+  "secret": "test-secret-do-not-use-in-production",
+  "maxAgeSeconds": 60,
+  "canonicalString": "METHOD\\nPATH_WITH_QUERY\\nX-Service-Timestamp\\nX-Actor-User-Id (empty if absent)\\nhex(SHA-256(raw body bytes))",
+  "signatureHeader": "X-Service-Signature: v1=<hex HMAC-SHA256(secret, canonicalString)>",
+  "cases": [
+    {
+      "name": "render-valid",
+      "note": "Publisher -> render worker (local HTTP mode).",
+      "request": {
+        "method": "POST",
+        "path": "/render",
+        "headers": {
+          "X-Service-Timestamp": "1795000000",
+          "X-Service-Signature": "v1=27b7bde96c3b9c45b985185f158408b600813bc26df60185adc7dd487ed97477"
+        },
+        "body": "{\"draft\":{\"schemaVersion\":1,\"websiteId\":\"website-456\",\"profileId\":\"profile-456\",\"templateId\":\"classic\",\"templateVersion\":\"1.0.0\",\"status\":\"PREVIEW_READY\",\"content\":{\"sections\":[{\"id\":\"hero\",\"type\":\"HERO\",\"data\":{\"title\":\"Alex Popescu\",\"subtitle\":\"Software Engineering Student\",\"links\":[{\"label\":\"GitHub\",\"url\":\"https://github.com/alex-popescu-dev\"},{\"label\":\"LinkedIn\",\"url\":\"https://www.linkedin.com/in/alex-popescu-example\"}]}},{\"id\":\"about\",\"type\":\"ABOUT\",\"data\":{\"text\":\"Computer Science student with hands-on backend experience in Java, now exploring AI systems.\",\"location\":\"Cluj-Napoca, Romania\"}},{\"id\":\"experience\",\"type\":\"EXPERIENCE\",\"data\":{\"items\":[{\"company\":\"Example Company\",\"position\":\"Software Developer Intern\",\"description\":\"Developed backend APIs in Java for an internal reporting tool.\",\"startDate\":\"2026-07\",\"endDate\":\"2026-09\",\"isCurrent\":false}]}},{\"id\":\"projects\",\"type\":\"PROJECTS\",\"data\":{\"items\":[{\"name\":\"portfolio-api\",\"description\":\"Backend API for managing portfolio information.\",\"url\":\"https://github.com/alex-popescu-dev/portfolio-api\",\"technologies\":[\"Java\",\"Maven\",\"Docker\"]}]}},{\"id\":\"skills\",\"type\":\"SKILLS\",\"data\":{\"items\":[\"Java\",\"Python\",\"PostgreSQL\",\"Spring Boot\",\"Docker\"],\"groups\":[{\"label\":\"Languages\",\"items\":[\"Java\",\"Python\"]},{\"label\":\"Tools\",\"items\":[\"PostgreSQL\",\"Spring Boot\",\"Docker\"]}]}},{\"id\":\"education\",\"type\":\"EDUCATION\",\"data\":{\"items\":[{\"institution\":\"Example University\",\"degree\":\"Bachelor's Degree\",\"fieldOfStudy\":\"Computer Science\",\"startDate\":\"2024\",\"endDate\":\"2027\"}]}},{\"id\":\"contact\",\"type\":\"CONTACT\",\"data\":{\"email\":\"alex@example.com\",\"links\":[{\"label\":\"GitHub\",\"url\":\"https://github.com/alex-popescu-dev\"}]}}]}},\"templateId\":\"classic\",\"templateVersion\":\"1.0.0\"}"
+      },
+      "canonicalString": "POST\n/render\n1795000000\n\nfc180f24cf69109c3506730d62733ff57d73a9f59829151ef571841513e95221",
+      "verifyAt": 1795000005,
+      "expected": "valid"
+    },
+    {
+      "name": "preview-valid-with-actor",
+      "note": "Core -> Website Service, GET with empty body and the forwarded user.",
+      "request": {
+        "method": "GET",
+        "path": "/internal/websites/website-456/preview",
+        "headers": {
+          "X-Service-Timestamp": "1795000000",
+          "X-Actor-User-Id": "user-123",
+          "X-Service-Signature": "v1=99e3b43c5cc5c4efa0d59a5e4e2d74503b4b6806c6f07989a86a5ab6aad7591c"
+        },
+        "body": ""
+      },
+      "canonicalString": "GET\n/internal/websites/website-456/preview\n1795000000\nuser-123\ne3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "verifyAt": 1795000000,
+      "expected": "valid"
+    },
+    {
+      "name": "publish-valid",
+      "note": "59 seconds old: still inside the 60-second window.",
+      "request": {
+        "method": "POST",
+        "path": "/internal/websites/website-456/publish",
+        "headers": {
+          "X-Service-Timestamp": "1795000000",
+          "X-Actor-User-Id": "user-123",
+          "X-Service-Signature": "v1=6fa7f065bddd553bc042c0ba337d28e90ad2a8e94d33c8b20e341fd9643a6220"
+        },
+        "body": "{\"slug\":\"alex-popescu\"}"
+      },
+      "canonicalString": "POST\n/internal/websites/website-456/publish\n1795000000\nuser-123\n4264ae86056062ea305a385bce3e7c745f94b7d21d8f7c081ff20ae4f2c50c15",
+      "verifyAt": 1795000059,
+      "expected": "valid"
+    },
+    {
+      "name": "publish-tampered-body",
+      "note": "Body changed after signing: signature no longer matches.",
+      "request": {
+        "method": "POST",
+        "path": "/internal/websites/website-456/publish",
+        "headers": {
+          "X-Service-Timestamp": "1795000000",
+          "X-Actor-User-Id": "user-123",
+          "X-Service-Signature": "v1=6fa7f065bddd553bc042c0ba337d28e90ad2a8e94d33c8b20e341fd9643a6220"
+        },
+        "body": "{\"slug\":\"someone-else\"}"
+      },
+      "canonicalString": "POST\n/internal/websites/website-456/publish\n1795000000\nuser-123\n90ce9320719f4ec0b5767cc0f8516e57052911d96b8f2f66fa5a7e05d5dc90ec",
+      "verifyAt": 1795000000,
+      "expected": "invalid"
+    },
+    {
+      "name": "publish-tampered-actor",
+      "note": "X-Actor-User-Id changed after signing.",
+      "request": {
+        "method": "POST",
+        "path": "/internal/websites/website-456/publish",
+        "headers": {
+          "X-Service-Timestamp": "1795000000",
+          "X-Actor-User-Id": "user-999",
+          "X-Service-Signature": "v1=6fa7f065bddd553bc042c0ba337d28e90ad2a8e94d33c8b20e341fd9643a6220"
+        },
+        "body": "{\"slug\":\"alex-popescu\"}"
+      },
+      "canonicalString": "POST\n/internal/websites/website-456/publish\n1795000000\nuser-999\n4264ae86056062ea305a385bce3e7c745f94b7d21d8f7c081ff20ae4f2c50c15",
+      "verifyAt": 1795000000,
+      "expected": "invalid"
+    },
+    {
+      "name": "publish-expired",
+      "note": "Correct signature but 61 seconds old: reject.",
+      "request": {
+        "method": "POST",
+        "path": "/internal/websites/website-456/publish",
+        "headers": {
+          "X-Service-Timestamp": "1795000000",
+          "X-Actor-User-Id": "user-123",
+          "X-Service-Signature": "v1=6fa7f065bddd553bc042c0ba337d28e90ad2a8e94d33c8b20e341fd9643a6220"
+        },
+        "body": "{\"slug\":\"alex-popescu\"}"
+      },
+      "canonicalString": "POST\n/internal/websites/website-456/publish\n1795000000\nuser-123\n4264ae86056062ea305a385bce3e7c745f94b7d21d8f7c081ff20ae4f2c50c15",
+      "verifyAt": 1795000061,
+      "expected": "expired"
+    },
+    {
+      "name": "publish-from-future",
+      "note": "Timestamp 120 seconds in the future: reject (clock skew beyond the window).",
+      "request": {
+        "method": "POST",
+        "path": "/internal/websites/website-456/publish",
+        "headers": {
+          "X-Service-Timestamp": "1795000120",
+          "X-Actor-User-Id": "user-123",
+          "X-Service-Signature": "v1=abda7829c793ec39bacd195e62fa4cd80734b0b4fab6ce9930de1184ad76db25"
+        },
+        "body": "{\"slug\":\"alex-popescu\"}"
+      },
+      "canonicalString": "POST\n/internal/websites/website-456/publish\n1795000120\nuser-123\n4264ae86056062ea305a385bce3e7c745f94b7d21d8f7c081ff20ae4f2c50c15",
+      "verifyAt": 1795000000,
+      "expected": "expired"
+    },
+    {
+      "name": "wrong-secret",
+      "note": "Signed with a different secret.",
+      "request": {
+        "method": "POST",
+        "path": "/render",
+        "headers": {
+          "X-Service-Timestamp": "1795000000",
+          "X-Service-Signature": "v1=b12bf0b729a338ad6a4c1f30fe6aba34013d6050fb7924cc1d08fc68bee976a9"
+        },
+        "body": "{\"draft\":{\"schemaVersion\":1,\"websiteId\":\"website-456\",\"profileId\":\"profile-456\",\"templateId\":\"classic\",\"templateVersion\":\"1.0.0\",\"status\":\"PREVIEW_READY\",\"content\":{\"sections\":[{\"id\":\"hero\",\"type\":\"HERO\",\"data\":{\"title\":\"Alex Popescu\",\"subtitle\":\"Software Engineering Student\",\"links\":[{\"label\":\"GitHub\",\"url\":\"https://github.com/alex-popescu-dev\"},{\"label\":\"LinkedIn\",\"url\":\"https://www.linkedin.com/in/alex-popescu-example\"}]}},{\"id\":\"about\",\"type\":\"ABOUT\",\"data\":{\"text\":\"Computer Science student with hands-on backend experience in Java, now exploring AI systems.\",\"location\":\"Cluj-Napoca, Romania\"}},{\"id\":\"experience\",\"type\":\"EXPERIENCE\",\"data\":{\"items\":[{\"company\":\"Example Company\",\"position\":\"Software Developer Intern\",\"description\":\"Developed backend APIs in Java for an internal reporting tool.\",\"startDate\":\"2026-07\",\"endDate\":\"2026-09\",\"isCurrent\":false}]}},{\"id\":\"projects\",\"type\":\"PROJECTS\",\"data\":{\"items\":[{\"name\":\"portfolio-api\",\"description\":\"Backend API for managing portfolio information.\",\"url\":\"https://github.com/alex-popescu-dev/portfolio-api\",\"technologies\":[\"Java\",\"Maven\",\"Docker\"]}]}},{\"id\":\"skills\",\"type\":\"SKILLS\",\"data\":{\"items\":[\"Java\",\"Python\",\"PostgreSQL\",\"Spring Boot\",\"Docker\"],\"groups\":[{\"label\":\"Languages\",\"items\":[\"Java\",\"Python\"]},{\"label\":\"Tools\",\"items\":[\"PostgreSQL\",\"Spring Boot\",\"Docker\"]}]}},{\"id\":\"education\",\"type\":\"EDUCATION\",\"data\":{\"items\":[{\"institution\":\"Example University\",\"degree\":\"Bachelor's Degree\",\"fieldOfStudy\":\"Computer Science\",\"startDate\":\"2024\",\"endDate\":\"2027\"}]}},{\"id\":\"contact\",\"type\":\"CONTACT\",\"data\":{\"email\":\"alex@example.com\",\"links\":[{\"label\":\"GitHub\",\"url\":\"https://github.com/alex-popescu-dev\"}]}}]}},\"templateId\":\"classic\",\"templateVersion\":\"1.0.0\"}"
+      },
+      "canonicalString": "POST\n/render\n1795000000\n\nfc180f24cf69109c3506730d62733ff57d73a9f59829151ef571841513e95221",
+      "verifyAt": 1795000000,
+      "expected": "invalid"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/http/render-request.schema.json",
+  "title": "RenderRequest",
+  "description": "Website Publisher -> render worker: POST /render locally (HMAC-signed), Lambda invoke payload on AWS (IAM). The whole request must stay under the 6 MB Lambda payload limit. Template System Spec §6, FE-33.",
+  "type": "object",
+  "properties": {
+    "draft": {
+      "$ref": "../website/website-draft.schema.json"
+    },
+    "templateId": {
+      "$ref": "../common/fields.schema.json#/$defs/templateId"
+    },
+    "templateVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/semver"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "draft",
+    "templateId",
+    "templateVersion"
+  ]
+}

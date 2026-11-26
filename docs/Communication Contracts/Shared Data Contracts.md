@@ -152,6 +152,7 @@ The HTTP `error` object on a failed job is `{ "code", "message", "stage", "retry
 | `SLUG_CONFLICT` | HTTP only (a different slug requested for an already published site) | Needs a user change |
 | `JOB_NOT_RETRYABLE` | HTTP only (retry of a job that cannot be retried) | No |
 | `RATE_LIMITED` | HTTP only (request, upload or generation limits; `429`) | Yes, later |
+| `BAD_REQUEST`, `UNAUTHENTICATED`, `FORBIDDEN`, `CSRF_INVALID`, `NOT_FOUND`, `NOT_READY`, `FILE_TOO_LARGE`, `UNSUPPORTED_FILE_TYPE`, `VALIDATION_ERROR`, `SERVICE_UNAVAILABLE` | HTTP only: the generic `400`, `401`, `403`, `404`, `409`, `413`, `415`, `422` and `503` cases of HTTP API Contracts §6 | See `contracts/README.md` |
 
 ### 3.4 Job Warnings (`JobWarning`)
 

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://proofolio.dev/contracts/schemas/common/error-code.schema.json",
   "title": "ErrorCode",
-  "description": "The single error-code enum for every event and HTTP error body. Failure Handling Design §3.4, Shared Data Contracts §3.3. Services may add codes but never repurpose one.",
+  "description": "The single error-code enum for every event and HTTP error body. Failure Handling Design §3.4, Shared Data Contracts §3.3, HTTP API Contracts §6. Services may add codes but never repurpose one.",
   "type": "string",
   "enum": [
     "SOURCE_UNREADABLE",
@@ -19,6 +19,16 @@
     "SLUG_CONFLICT",
     "PUBLISH_ASSET_ERROR",
     "JOB_NOT_RETRYABLE",
-    "RATE_LIMITED"
+    "RATE_LIMITED",
+    "BAD_REQUEST",
+    "UNAUTHENTICATED",
+    "FORBIDDEN",
+    "CSRF_INVALID",
+    "NOT_FOUND",
+    "NOT_READY",
+    "FILE_TOO_LARGE",
+    "UNSUPPORTED_FILE_TYPE",
+    "VALIDATION_ERROR",
+    "SERVICE_UNAVAILABLE"
   ]
 }

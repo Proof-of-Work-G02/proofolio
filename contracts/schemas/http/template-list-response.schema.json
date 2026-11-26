@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/http/template-list-response.schema.json",
+  "title": "TemplateListResponse",
+  "description": "200 response of GET /api/templates, served from registry.json. Template System Spec §7.",
+  "type": "object",
+  "properties": {
+    "templates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/templateSummary"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "templates"
+  ],
+  "$defs": {
+    "templateSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "../common/fields.schema.json#/$defs/templateId"
+        },
+        "version": {
+          "$ref": "../common/fields.schema.json#/$defs/semver"
+        },
+        "name": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "description": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "thumbnailUrl": {
+          "$ref": "../common/fields.schema.json#/$defs/httpsUrl"
+        },
+        "sections": {
+          "type": "object",
+          "properties": {
+            "required": {
+              "type": "array",
+              "items": {
+                "$ref": "../common/section-type.schema.json"
+              },
+              "uniqueItems": true
+            },
+            "optional": {
+              "type": "array",
+              "items": {
+                "$ref": "../common/section-type.schema.json"
+              },
+              "uniqueItems": true
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "required",
+            "optional"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "name",
+        "description",
+        "thumbnailUrl",
+        "sections"
+      ]
+    }
+  }
+}

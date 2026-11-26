@@ -1,0 +1,15 @@
+{
+  "files": [
+    {
+      "path": "assets/style.css",
+      "contentType": "text/css; charset=utf-8",
+      "contentBase64": "Ym9keXtmb250LWZhbWlseTpzeXN0ZW0tdWksc2Fucy1zZXJpZn0K"
+    },
+    {
+      "path": "index.html",
+      "contentType": "text/html; charset=utf-8",
+      "contentBase64": "PCFkb2N0eXBlIGh0bWw+PGh0bWwgbGFuZz0iZW4iPjxoZWFkPjxtZXRhIGNoYXJzZXQ9InV0Zi04Ij48dGl0bGU+QWxleCBQb3Blc2N1PC90aXRsZT48bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9ImFzc2V0cy9zdHlsZS5jc3MiPjwvaGVhZD48Ym9keT48aDE+QWxleCBQb3Blc2N1PC9oMT48L2JvZHk+PC9odG1sPgo="
+    }
+  ],
+  "rendererVersion": "1.0.0"
+}

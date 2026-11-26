@@ -75,9 +75,12 @@ function rewrite(node, fromFile) {
         const id = `${targetFile}#${frag}`;
         if (!hoisted.has(id)) {
           const name = target.title ?? pascal(frag.split("/").pop());
-          if (defs[name] || [...hoisted.values()].includes(name)) throw new Error(`Bundle name clash: "${name}" (${value})`);
+          const body = rewrite(target, targetFile);
+          // Two schemas may define the same helper (e.g. jobTask); identical ones share one type.
+          if (defs[name] && JSON.stringify(defs[name]) !== JSON.stringify(body))
+            throw new Error(`Bundle name clash: "${name}" (${value}) is defined differently in two schemas`);
           hoisted.set(id, name);
-          defs[name] = rewrite(target, targetFile);
+          defs[name] = body;
         }
         out.$ref = `#/$defs/${hoisted.get(id)}`;
       } else {
