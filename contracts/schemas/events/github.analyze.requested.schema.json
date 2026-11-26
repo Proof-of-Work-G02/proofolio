@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/events/github.analyze.requested.schema.json",
+  "title": "GithubAnalyzeRequested",
+  "description": "Queue `github-analysis`. Producer: Core Backend (Job Orchestrator). Consumer: GitHub Analysis Service. SQS Event Contracts §4.2.",
+  "x-queue": "github-analysis",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "eventId": {
+      "$ref": "../common/fields.schema.json#/$defs/eventId"
+    },
+    "occurredAt": {
+      "$ref": "../common/fields.schema.json#/$defs/occurredAt"
+    },
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "event": {
+      "type": "string",
+      "const": "github.analyze.requested"
+    },
+    "taskId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "userId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "githubUsername": {
+      "$ref": "../common/fields.schema.json#/$defs/githubUsername"
+    },
+    "attempt": {
+      "$ref": "../common/fields.schema.json#/$defs/attempt"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "event",
+    "occurredAt",
+    "jobId",
+    "taskId",
+    "userId",
+    "githubUsername"
+  ],
+  "additionalProperties": false
+}

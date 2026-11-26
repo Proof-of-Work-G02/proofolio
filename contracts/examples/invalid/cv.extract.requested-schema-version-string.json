@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1",
+  "eventId": "550e8400-e29b-41d4-a716-446655440001",
+  "event": "cv.extract.requested",
+  "occurredAt": "2026-11-17T14:30:00Z",
+  "jobId": "job-456",
+  "taskId": "task-789",
+  "userId": "user-123",
+  "cvS3Key": "user-123/job-456/cv.pdf",
+  "attempt": 1
+}

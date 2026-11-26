@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/events/website.generated.schema.json",
+  "title": "WebsiteGenerated",
+  "description": "Queue `processing-results`. Producer: Website Service (Website Generator). Consumer: Core Backend (Job Orchestrator). SQS Event Contracts §6.2.",
+  "x-queue": "processing-results",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "eventId": {
+      "$ref": "../common/fields.schema.json#/$defs/eventId"
+    },
+    "occurredAt": {
+      "$ref": "../common/fields.schema.json#/$defs/occurredAt"
+    },
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "event": {
+      "type": "string",
+      "const": "website.generated"
+    },
+    "userId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "profileId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "websiteId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "status": {
+      "type": "string",
+      "const": "PREVIEW_READY"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "event",
+    "occurredAt",
+    "jobId",
+    "userId",
+    "profileId",
+    "websiteId",
+    "status"
+  ],
+  "additionalProperties": false
+}

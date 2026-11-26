@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "eventId": "550e8400-e29b-41d4-a716-446655440004",
+  "event": "processing.completed",
+  "occurredAt": "2026-11-17T14:31:00Z",
+  "jobId": "job-456",
+  "taskId": "task-789",
+  "sourceType": "CV",
+  "status": "COMPLETED",
+  "resultS3Key": "job-456/task-789/cv.json",
+  "attempt": 1
+}

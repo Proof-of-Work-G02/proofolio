@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/events/website.published.schema.json",
+  "title": "WebsitePublished",
+  "description": "Queue `processing-results`. Producer: Website Service (Website Publisher). Consumer: Core Backend. SQS Event Contracts §6.4.",
+  "x-queue": "processing-results",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "eventId": {
+      "$ref": "../common/fields.schema.json#/$defs/eventId"
+    },
+    "occurredAt": {
+      "$ref": "../common/fields.schema.json#/$defs/occurredAt"
+    },
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "event": {
+      "type": "string",
+      "const": "website.published"
+    },
+    "userId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "websiteId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "slug": {
+      "$ref": "../common/fields.schema.json#/$defs/slug"
+    },
+    "status": {
+      "type": "string",
+      "const": "PUBLISHED"
+    },
+    "url": {
+      "$ref": "../common/fields.schema.json#/$defs/httpsUrl"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "event",
+    "occurredAt",
+    "jobId",
+    "userId",
+    "websiteId",
+    "slug",
+    "status",
+    "url"
+  ],
+  "additionalProperties": false
+}

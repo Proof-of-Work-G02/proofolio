@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/common/job-status.schema.json",
+  "title": "JobStatus",
+  "description": "jobs.status, owned by Core Backend. Failure Handling Design §6.1.",
+  "type": "string",
+  "enum": [
+    "QUEUED",
+    "PROCESSING",
+    "AGGREGATING",
+    "GENERATING",
+    "PREVIEW_READY",
+    "PUBLISHING",
+    "PUBLISHED",
+    "FAILED"
+  ]
+}

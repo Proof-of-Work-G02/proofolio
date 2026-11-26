@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/common/fields.schema.json",
+  "title": "Shared event fields",
+  "description": "Reusable field types for the queue events. SQS Event Contracts §3.1, Communication Standards §3.",
+  "$defs": {
+    "schemaVersion": {
+      "description": "Major contract version. All MVP events use 1.",
+      "type": "integer",
+      "const": 1
+    },
+    "eventId": {
+      "description": "Unique per emission (UUID).",
+      "type": "string",
+      "format": "uuid"
+    },
+    "occurredAt": {
+      "description": "UTC RFC 3339 timestamp, for example 2026-11-17T14:30:00Z.",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "id": {
+      "description": "Opaque identifier. Never parse or derive meaning from it.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "attempt": {
+      "description": "Retry attempt number (default 1). Request events may carry it; result and failure events echo it.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "s3Key": {
+      "description": "Object key relative to its bucket, for example user-123/job-456/cv.pdf. No leading slash.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^[^/]"
+    },
+    "slug": {
+      "description": "Subdomain slug: lowercase letters, digits and hyphens, a valid DNS label of at most 63 characters. Website Service doc.",
+      "type": "string",
+      "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$"
+    },
+    "githubUsername": {
+      "description": "Normalized GitHub username (GitHub allows letters, digits and single hyphens, at most 39 characters).",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$"
+    },
+    "httpsUrl": {
+      "description": "Absolute https URL.",
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "errorMessage": {
+      "description": "Short, safe to show to a user. No stack traces, CV text, personal data or secrets.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  }
+}

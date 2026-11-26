@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1",
+  "eventId": "550e8400-e29b-41d4-a716-446655440003",
+  "event": "linkedin.extract.requested",
+  "occurredAt": "2026-11-17T14:30:00Z",
+  "jobId": "job-456",
+  "taskId": "task-791",
+  "userId": "user-123",
+  "linkedinS3Key": "user-123/job-456/linkedin-profile.pdf"
+}
