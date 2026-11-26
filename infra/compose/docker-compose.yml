@@ -1,0 +1,138 @@
+# Proofolio local development stack (KAN-8).
+#
+# Start it with `python scripts/dev.py up` (or `make up`), never by hand from another
+# folder: the script passes the right env file and waits for the init job.
+#
+# Project name is "proofolio-dev" on purpose, so `down`/`reset` never touch other
+# Compose projects on the same machine.
+name: proofolio-dev
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 3s
+  timeout: 3s
+  retries: 30
+  start_period: 5s
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-proofolio}
+      POSTGRES_USER: ${POSTGRES_USER:-proofolio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-proofolio}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+
+  # SQS-compatible queue server. Queues, DLQs, visibility timeouts and
+  # maxReceiveCount all come from elasticmq/elasticmq.conf.
+  elasticmq:
+    image: softwaremill/elasticmq-native:1.7.1
+    ports:
+      - "${SQS_PORT:-9324}:9324"
+    volumes:
+      - ./elasticmq/elasticmq.conf:/opt/elasticmq.conf:ro
+    # The native image has no shell tools for a healthcheck; init.py waits for it instead.
+
+  # S3-compatible object storage. RustFS replaces MinIO, which stopped publishing
+  # Docker images in 2025. Same S3 API, same ports (9000 API, 9001 console).
+  s3:
+    image: rustfs/rustfs:1.0.7
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY_ID:-proofolio}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:-proofolio-secret}
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+    ports:
+      - "${S3_PORT:-9000}:9000"
+      - "${S3_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - s3-data:/data
+    healthcheck:
+      <<: *healthcheck-defaults
+      test: ["CMD-SHELL", "nc -z localhost 9000"]
+
+  # One-shot job: creates buckets (private) and checks that every queue exists.
+  # Safe to run any number of times.
+  init:
+    build: ./tools
+    command: ["python", "/tools/init.py"]
+    env_file:
+      - ${PROOFOLIO_ENV_FILE:-../../.env.example}
+    environment:
+      AWS_ENDPOINT_URL_SQS: http://elasticmq:9324
+      AWS_ENDPOINT_URL_S3: http://s3:9000
+    volumes:
+      - ./tools:/tools:ro
+    depends_on:
+      s3:
+        condition: service_healthy
+      elasticmq:
+        condition: service_started
+    restart: "no"
+
+  # Smoke test, run with `python scripts/dev.py smoke`. Not started by `up`.
+  smoke:
+    build: ./tools
+    command: ["python", "/tools/smoke.py"]
+    profiles: ["tools"]
+    env_file:
+      - ${PROOFOLIO_ENV_FILE:-../../.env.example}
+    environment:
+      AWS_ENDPOINT_URL_SQS: http://elasticmq:9324
+      AWS_ENDPOINT_URL_S3: http://s3:9000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-proofolio}:${POSTGRES_PASSWORD:-proofolio}@postgres:5432/${POSTGRES_DB:-proofolio}
+    volumes:
+      - ./tools:/tools:ro
+    depends_on:
+      init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # Application services. Each team uncomments its service once it has a
+  # Dockerfile. Inside the network use the service names below
+  # (postgres:5432, elasticmq:9324, s3:9000), not localhost.
+  # ---------------------------------------------------------------------------
+  # core-backend:
+  #   build: ../../services/core-backend
+  #   env_file: [${PROOFOLIO_ENV_FILE:-../../.env.example}]
+  #   environment:
+  #     DATABASE_URL: postgresql://proofolio:proofolio@postgres:5432/proofolio
+  #     AWS_ENDPOINT_URL_SQS: http://elasticmq:9324
+  #     AWS_ENDPOINT_URL_S3: http://s3:9000
+  #   ports: ["8000:8000"]
+  #   depends_on:
+  #     init: { condition: service_completed_successfully }
+  #     postgres: { condition: service_healthy }
+  #
+  # website-service:
+  #   build: ../../services/website-service
+  #   ports: ["8001:8000"]
+  #
+  # render-worker:        # HTTP service locally, Lambda image on AWS
+  #   build: ../../services/render-worker
+  #   ports: ["8010:8080"]
+  #
+  # cv-extraction:
+  #   build: ../../services/cv-extraction
+  #
+  # linkedin-extraction:
+  #   build: ../../services/linkedin-extraction
+  #
+  # github-analysis:
+  #   build: ../../services/github-analysis
+  #
+  # frontend:
+  #   build: ../../apps/frontend
+  #   ports: ["5173:5173"]
+
+volumes:
+  postgres-data:
+  s3-data:

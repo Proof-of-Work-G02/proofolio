@@ -344,7 +344,7 @@ The complete processing flow is:
 
 **Messaging Technology:** Amazon SQS Standard (AWS), ElasticMQ (local development).
 
-**Object Storage:** Amazon S3 (AWS), MinIO (local development).
+**Object Storage:** Amazon S3 (AWS), RustFS (local development).
 
 **Database:** PostgreSQL (Amazon RDS in AWS, Docker locally).
 
@@ -663,7 +663,7 @@ The AWS environment is used for deployment, integration verification and demonst
 | Service Execution | Docker Compose | AWS Lambda container image for the render worker; the other services run on ECS Fargate |
 | Database | PostgreSQL Docker | Amazon RDS PostgreSQL |
 | Message Queue | ElasticMQ | Amazon SQS Standard |
-| Object Storage | MinIO | Amazon S3 |
+| Object Storage | RustFS | Amazon S3 |
 | Frontend | Local development server | AWS hosting configuration — TBD |
 | Published Websites | Local static hosting / testing | Amazon S3 + CloudFront |
 | Subdomain Routing | Local routing simulation | Wildcard DNS + CloudFront Function |
@@ -685,11 +685,11 @@ The environment includes:
 - Website Service.
 - PostgreSQL.
 - ElasticMQ.
-- MinIO.
+- RustFS.
 
 Services communicate using the same logical API and event contracts as the AWS environment.
 
-ElasticMQ provides an SQS-compatible API, while MinIO provides an S3-compatible object storage API.
+ElasticMQ provides an SQS-compatible API, while RustFS provides an S3-compatible object storage API. RustFS replaces MinIO, which stopped publishing Docker images in 2025; both speak the same S3 API.
 
 The application uses environment-specific configuration to connect to local or AWS infrastructure.
 
@@ -857,7 +857,7 @@ The additional user steps required for profile export are recognized as a user e
 
 The application is developed and tested primarily in a local Docker Compose environment.
 
-PostgreSQL, ElasticMQ and MinIO provide local alternatives to managed AWS infrastructure.
+PostgreSQL, ElasticMQ and RustFS provide local alternatives to managed AWS infrastructure.
 
 Application services use the same logical interfaces in local and AWS environments.
 
