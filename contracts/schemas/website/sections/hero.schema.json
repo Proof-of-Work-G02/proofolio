@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/website/sections/hero.schema.json",
+  "title": "HeroSectionData",
+  "description": "`data` of a HERO section in a website draft. title from fullName, subtitle from headline. Plain text only; URLs must be https. Template System Spec §5.",
+  "type": "object",
+  "properties": {
+    "title": {
+      "$ref": "../../common/fields.schema.json#/$defs/text"
+    },
+    "subtitle": {
+      "$ref": "../../common/fields.schema.json#/$defs/text"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "$ref": "../../common/fields.schema.json#/$defs/link"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "title"
+  ]
+}

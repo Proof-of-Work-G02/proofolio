@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/website/sections/projects.schema.json",
+  "title": "ProjectsSectionData",
+  "description": "`data` of a PROJECTS section in a website draft. From projects; omit the section when empty. Plain text only; URLs must be https. Template System Spec §5.",
+  "type": "object",
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "../../common/fields.schema.json#/$defs/text"
+          },
+          "description": {
+            "$ref": "../../common/fields.schema.json#/$defs/text"
+          },
+          "url": {
+            "$ref": "../../common/fields.schema.json#/$defs/httpsUrl"
+          },
+          "technologies": {
+            "type": "array",
+            "items": {
+              "$ref": "../../common/fields.schema.json#/$defs/text"
+            }
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "items"
+  ]
+}

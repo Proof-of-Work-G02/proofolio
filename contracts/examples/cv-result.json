@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "jobId": "job-456",
+  "taskId": "task-789",
+  "sourceType": "CV",
+  "profile": {
+    "fullName": "Alex Popescu",
+    "location": "Cluj-Napoca, Romania",
+    "email": "alex@example.com",
+    "phone": "+40 700 000 000",
+    "summary": "Computer Science student interested in backend development.",
+    "workExperience": [
+      {
+        "company": "Example Company",
+        "position": "Software Developer Intern",
+        "description": "Developed backend APIs in Java for an internal reporting tool.",
+        "startDate": "2026-07",
+        "endDate": "2026-09",
+        "isCurrent": false
+      }
+    ],
+    "education": [
+      {
+        "institution": "Example University",
+        "degree": "Bachelor's Degree",
+        "fieldOfStudy": "Computer Science",
+        "startDate": "2024",
+        "endDate": "2027"
+      }
+    ],
+    "skills": [
+      "Java",
+      "Python",
+      "PostgreSQL"
+    ],
+    "projects": [
+      {
+        "name": "Portfolio Platform",
+        "description": "Personal portfolio generation application.",
+        "technologies": [
+          "Java",
+          "React"
+        ]
+      }
+    ],
+    "languages": [
+      {
+        "name": "Romanian",
+        "proficiency": "Native"
+      },
+      {
+        "name": "English",
+        "proficiency": "C1"
+      }
+    ]
+  }
+}

@@ -1,0 +1,208 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/website/website-draft.schema.json",
+  "title": "WebsiteDraft",
+  "description": "Generated website content, stored in websites.draft_content (JSONB). The database columns (template_id, template_version, status) are authoritative; the ids here are informational. Shared Data Contracts §9, Template System Spec §5.",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "websiteId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "profileId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "templateId": {
+      "$ref": "../common/fields.schema.json#/$defs/templateId"
+    },
+    "templateVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/semver"
+    },
+    "status": {
+      "$ref": "../common/website-status.schema.json"
+    },
+    "content": {
+      "type": "object",
+      "properties": {
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/section"
+          },
+          "minItems": 1,
+          "description": "Ordered sections. Section ids must be unique within the draft (checked by the generator, not expressible in JSON Schema)."
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "sections"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "content"
+  ],
+  "$defs": {
+    "sectionId": {
+      "description": "Unique section id within the draft, for example hero.",
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+    },
+    "section": {
+      "description": "One section: id, type and the data schema for that type.",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/sectionId"
+            },
+            "type": {
+              "type": "string",
+              "const": "HERO"
+            },
+            "data": {
+              "$ref": "./sections/hero.schema.json"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "data"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/sectionId"
+            },
+            "type": {
+              "type": "string",
+              "const": "ABOUT"
+            },
+            "data": {
+              "$ref": "./sections/about.schema.json"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "data"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/sectionId"
+            },
+            "type": {
+              "type": "string",
+              "const": "EXPERIENCE"
+            },
+            "data": {
+              "$ref": "./sections/experience.schema.json"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "data"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/sectionId"
+            },
+            "type": {
+              "type": "string",
+              "const": "EDUCATION"
+            },
+            "data": {
+              "$ref": "./sections/education.schema.json"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "data"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/sectionId"
+            },
+            "type": {
+              "type": "string",
+              "const": "SKILLS"
+            },
+            "data": {
+              "$ref": "./sections/skills.schema.json"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "data"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/sectionId"
+            },
+            "type": {
+              "type": "string",
+              "const": "PROJECTS"
+            },
+            "data": {
+              "$ref": "./sections/projects.schema.json"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "data"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/sectionId"
+            },
+            "type": {
+              "type": "string",
+              "const": "CONTACT"
+            },
+            "data": {
+              "$ref": "./sections/contact.schema.json"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "data"
+          ]
+        }
+      ]
+    }
+  }
+}

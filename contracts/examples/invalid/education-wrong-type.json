@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "institution": "Example University",
+      "degree": "Bachelor's Degree",
+      "fieldOfStudy": "Computer Science",
+      "startDate": 2024,
+      "endDate": "2027"
+    }
+  ]
+}

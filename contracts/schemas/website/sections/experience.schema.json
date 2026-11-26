@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/website/sections/experience.schema.json",
+  "title": "ExperienceSectionData",
+  "description": "`data` of a EXPERIENCE section in a website draft. From workExperience; omit the section when empty. Plain text only; URLs must be https. Template System Spec §5.",
+  "type": "object",
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "$ref": "../../common/fields.schema.json#/$defs/text"
+          },
+          "position": {
+            "$ref": "../../common/fields.schema.json#/$defs/text"
+          },
+          "description": {
+            "$ref": "../../common/fields.schema.json#/$defs/text"
+          },
+          "startDate": {
+            "$ref": "../../common/fields.schema.json#/$defs/partialDate"
+          },
+          "endDate": {
+            "$ref": "../../common/fields.schema.json#/$defs/partialDate"
+          },
+          "isCurrent": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "company",
+          "position",
+          "startDate"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "items"
+  ]
+}

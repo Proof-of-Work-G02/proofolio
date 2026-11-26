@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "name": "portfolio-api",
+      "description": "Backend API for managing portfolio information.",
+      "url": "javascript:alert(1)",
+      "technologies": [
+        "Java",
+        "Maven",
+        "Docker"
+      ]
+    }
+  ]
+}

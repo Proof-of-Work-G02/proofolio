@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/website/sections/about.schema.json",
+  "title": "AboutSectionData",
+  "description": "`data` of a ABOUT section in a website draft. text from summary. Plain text only; URLs must be https. Template System Spec §5.",
+  "type": "object",
+  "properties": {
+    "text": {
+      "$ref": "../../common/fields.schema.json#/$defs/text"
+    },
+    "location": {
+      "$ref": "../../common/fields.schema.json#/$defs/text"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "text"
+  ]
+}

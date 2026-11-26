@@ -1,0 +1,62 @@
+{
+  "fullName": "Alex Popescu",
+  "headline": "Software Engineering Student",
+  "location": "Cluj-Napoca, Romania",
+  "email": "alex@example.com",
+  "phone": "+40 700 000 000",
+  "links": [
+    "https://www.linkedin.com/in/alex-popescu-example",
+    "https://github.com/alex-popescu-dev"
+  ],
+  "summary": "Computer Science student with experience in backend development, interested in AI systems.",
+  "workExperience": [
+    {
+      "company": "Example Company",
+      "position": "Software Developer Intern",
+      "description": "Developed backend APIs in Java for an internal reporting tool.",
+      "startDate": "2026-07",
+      "endDate": "2026-09",
+      "isCurrent": false
+    }
+  ],
+  "education": [
+    {
+      "institution": "Example University",
+      "degree": "Bachelor's Degree",
+      "fieldOfStudy": "Computer Science",
+      "startDate": "2024",
+      "endDate": "2027"
+    }
+  ],
+  "skills": "Java, Python",
+  "projects": [
+    {
+      "name": "portfolio-api",
+      "url": "https://github.com/alex-popescu-dev/portfolio-api",
+      "description": "Backend API for portfolio management.",
+      "technologies": [
+        "Java",
+        "Maven",
+        "Docker"
+      ]
+    }
+  ],
+  "languages": [
+    {
+      "name": "Romanian",
+      "proficiency": "Native"
+    },
+    {
+      "name": "English",
+      "proficiency": "C1"
+    }
+  ],
+  "volunteering": [
+    {
+      "organization": "Code Club Cluj",
+      "role": "Mentor",
+      "description": "Taught Python basics to high-school students.",
+      "startDate": "2025-02"
+    }
+  ]
+}

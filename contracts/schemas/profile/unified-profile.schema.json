@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/profile/unified-profile.schema.json",
+  "title": "UnifiedProfile",
+  "description": "Consolidated profile built by Core Backend aggregation, stored in profiles.profile_data (JSONB). Ids that are table columns (job, user, profile) are not repeated here; source warnings live in jobs.warnings. Shared Data Contracts §8.",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "sourceTypes": {
+      "description": "Sources that completed. The CV is required, so it is always present; a failed optional source is absent.",
+      "type": "array",
+      "items": {
+        "$ref": "../common/source-type.schema.json"
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "contains": {
+        "const": "CV"
+      }
+    },
+    "profile": {
+      "$ref": "../profile/professional-profile.schema.json"
+    },
+    "provenance": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/provenance"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "sourceTypes",
+    "profile"
+  ],
+  "$defs": {
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "JSON Pointer into this document, for example /profile/skills/3. Updated if arrays are reordered.",
+          "type": "string",
+          "pattern": "^/profile(/[^/]+)*$"
+        },
+        "sourceType": {
+          "$ref": "../common/source-type.schema.json"
+        },
+        "taskId": {
+          "$ref": "../common/fields.schema.json#/$defs/id"
+        },
+        "reference": {
+          "description": "Pointer into the source result or evidence, for example portfolio-api/Dockerfile.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared Data Contracts §8.5.",
+      "required": [
+        "path",
+        "sourceType",
+        "taskId"
+      ]
+    }
+  }
+}

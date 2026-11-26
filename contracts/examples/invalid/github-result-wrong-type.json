@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "jobId": "job-456",
+  "taskId": "task-790",
+  "sourceType": "GITHUB",
+  "githubUsername": "alex-popescu-dev",
+  "repositories": "portfolio-api"
+}

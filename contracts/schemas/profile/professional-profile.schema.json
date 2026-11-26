@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/profile/professional-profile.schema.json",
+  "title": "CanonicalProfessionalProfile",
+  "description": "Shared professional structure produced by the CV and LinkedIn extractors and used inside the unified profile. Every field is optional: omit what is unknown, never invent it (Shared Data Contracts §4, §4.8). An empty array means the category is known to be empty.",
+  "type": "object",
+  "properties": {
+    "fullName": {
+      "$ref": "../common/fields.schema.json#/$defs/text"
+    },
+    "headline": {
+      "$ref": "../common/fields.schema.json#/$defs/text"
+    },
+    "location": {
+      "$ref": "../common/fields.schema.json#/$defs/text"
+    },
+    "email": {
+      "$ref": "../common/fields.schema.json#/$defs/email"
+    },
+    "phone": {
+      "$ref": "../common/fields.schema.json#/$defs/text"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "$ref": "../common/fields.schema.json#/$defs/httpsUrl"
+      },
+      "description": "Professional URLs."
+    },
+    "summary": {
+      "$ref": "../common/fields.schema.json#/$defs/text"
+    },
+    "workExperience": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/workExperience"
+      }
+    },
+    "education": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/education"
+      }
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "$ref": "../common/fields.schema.json#/$defs/text"
+      }
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/project"
+      }
+    },
+    "certifications": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/certification"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/language"
+      }
+    },
+    "volunteering": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/volunteering"
+      }
+    },
+    "awards": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/award"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "workExperience": {
+      "type": "object",
+      "properties": {
+        "company": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "position": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "description": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "startDate": {
+          "$ref": "../common/fields.schema.json#/$defs/partialDate"
+        },
+        "endDate": {
+          "$ref": "../common/fields.schema.json#/$defs/partialDate"
+        },
+        "isCurrent": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared Data Contracts §4.2. A missing endDate does not mean current employment.",
+      "minProperties": 1
+    },
+    "education": {
+      "type": "object",
+      "properties": {
+        "institution": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "degree": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "fieldOfStudy": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "startDate": {
+          "$ref": "../common/fields.schema.json#/$defs/partialDate"
+        },
+        "endDate": {
+          "$ref": "../common/fields.schema.json#/$defs/partialDate"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared Data Contracts §4.3.",
+      "minProperties": 1
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "description": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "url": {
+          "$ref": "../common/fields.schema.json#/$defs/httpsUrl"
+        },
+        "technologies": {
+          "type": "array",
+          "items": {
+            "$ref": "../common/fields.schema.json#/$defs/text"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared Data Contracts §4.4.",
+      "minProperties": 1
+    },
+    "certification": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "issuer": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "date": {
+          "$ref": "../common/fields.schema.json#/$defs/partialDate"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared Data Contracts §4.5.",
+      "minProperties": 1
+    },
+    "language": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "proficiency": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared Data Contracts §4.6.",
+      "required": [
+        "name"
+      ]
+    },
+    "volunteering": {
+      "type": "object",
+      "properties": {
+        "organization": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "role": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "description": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "startDate": {
+          "$ref": "../common/fields.schema.json#/$defs/partialDate"
+        },
+        "endDate": {
+          "$ref": "../common/fields.schema.json#/$defs/partialDate"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared Data Contracts §4.7.",
+      "minProperties": 1
+    },
+    "award": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "issuer": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "date": {
+          "$ref": "../common/fields.schema.json#/$defs/partialDate"
+        },
+        "description": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared Data Contracts §4.7.",
+      "minProperties": 1
+    }
+  }
+}

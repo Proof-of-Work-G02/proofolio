@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/website/template-manifest.schema.json",
+  "title": "TemplateManifest",
+  "description": "template.json of a website template package (packages/templates/<id>/). Template System Spec §4.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "../common/fields.schema.json#/$defs/templateId"
+    },
+    "version": {
+      "$ref": "../common/fields.schema.json#/$defs/semver"
+    },
+    "name": {
+      "$ref": "../common/fields.schema.json#/$defs/text"
+    },
+    "description": {
+      "$ref": "../common/fields.schema.json#/$defs/text"
+    },
+    "thumbnail": {
+      "description": "Thumbnail file name inside the template package.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]+\\.(webp|png|jpg|jpeg|svg)$"
+    },
+    "layout": {
+      "description": "Layout kind, for example single-page.",
+      "type": "string",
+      "minLength": 1
+    },
+    "sections": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "$ref": "../common/section-type.schema.json"
+          },
+          "uniqueItems": true
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "$ref": "../common/section-type.schema.json"
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "optional"
+      ]
+    },
+    "order": {
+      "type": "array",
+      "items": {
+        "$ref": "../common/section-type.schema.json"
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Render order of the sections."
+    },
+    "limits": {
+      "description": "Per-section limits, for example PROJECTS: {maxItems: 6}. Stops the AI producing more than the layout holds.",
+      "type": "object",
+      "propertyNames": {
+        "$ref": "../common/section-type.schema.json"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "maxItems": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "maxItems"
+        ]
+      }
+    },
+    "themeOptions": {
+      "description": "Optional theme choices, unused in v1.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "version",
+    "name",
+    "description",
+    "thumbnail",
+    "layout",
+    "sections",
+    "order"
+  ]
+}

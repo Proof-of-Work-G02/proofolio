@@ -1,0 +1,48 @@
+{
+  "id": "classic",
+  "version": "1.0.0",
+  "name": "Classic",
+  "description": "Single-page layout with a sticky header.",
+  "thumbnail": "thumbnail.webp",
+  "layout": "single-page",
+  "sections": {
+    "required": [
+      "HERO",
+      "ABOUT"
+    ],
+    "optional": [
+      "EXPERIENCE",
+      "EDUCATION",
+      "SKILLS",
+      "PROJECTS",
+      "CONTACT"
+    ]
+  },
+  "order": [
+    "HERO",
+    "ABOUT",
+    "EXPERIENCE",
+    "PROJECTS",
+    "SKILLS",
+    "EDUCATION",
+    "CONTACT"
+  ],
+  "limits": {
+    "PROJECTS": {
+      "maxItems": 6
+    },
+    "SKILLS": {
+      "maxItems": 20
+    },
+    "EXPERIENCE": {
+      "maxItems": 8
+    }
+  },
+  "themeOptions": {
+    "accent": [
+      "#2563eb",
+      "#16a34a",
+      "#dc2626"
+    ]
+  }
+}

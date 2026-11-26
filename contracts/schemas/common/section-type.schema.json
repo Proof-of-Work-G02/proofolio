@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/common/section-type.schema.json",
+  "title": "SectionType",
+  "description": "Website draft section types. Shared Data Contracts §9.4.",
+  "type": "string",
+  "enum": [
+    "HERO",
+    "ABOUT",
+    "EXPERIENCE",
+    "EDUCATION",
+    "SKILLS",
+    "PROJECTS",
+    "CONTACT"
+  ]
+}

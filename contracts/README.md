@@ -11,7 +11,7 @@ validates against. If a schema and a doc disagree, that is a bug: report it, don
 | Task | What | Folder | Status |
 |---|---|---|---|
 | KAN-6 | Queue events, the error-code enum, statuses | `schemas/events/`, `schemas/common/` | Done |
-| KAN-14 | Documents: profile, extraction results, unified profile, website draft, sections, template manifest | `schemas/documents/` | Planned |
+| KAN-14 | Documents: profile, extraction results, unified profile, website draft, sections, template manifest | `schemas/profile/`, `schemas/extraction/`, `schemas/website/` | Done |
 | KAN-15 | HTTP API bodies and the render-worker call | `schemas/http/` | Planned |
 | KAN-7 | Validation command, generated TypeScript / Python types, breaking-change check | `tooling/` | Done |
 
@@ -22,6 +22,9 @@ contracts/
   schemas/
     common/      enums and shared field types, referenced by every other schema
     events/      one schema per queue event, named <event>.schema.json
+    profile/     professional-profile (shared by CV and LinkedIn), unified-profile
+    extraction/  cv-result, linkedin-result, github-result (files in the extraction-results bucket)
+    website/     website-draft, template-manifest, sections/<type>.schema.json
   examples/
     <schema>.json                 a valid example, must pass
     invalid/<schema>-<case>.json  must FAIL, one file per broken rule
@@ -67,6 +70,43 @@ can drop results from an older attempt.
 **Failure fields** (Failure Handling Design §3.1): `stage`, `errorCode`, `errorMessage` (user-safe,
 max 500 characters), `retryable`, `attempts`, optional `diagnosticsS3Key`. `processing.failed` only
 takes the three extraction stages; `website.failed` only `WEBSITE_GENERATION` or `WEBSITE_PUBLISHING`.
+
+## Documents
+
+JSON documents stored in S3 or Postgres and exchanged between services (Shared Data Contracts
+§3–§9, Template System Spec §4–§5). Every document carries `schemaVersion: 1`.
+
+| Schema | Title (generated type) | Producer → consumer | Stored in |
+|---|---|---|---|
+| `profile/professional-profile` | `CanonicalProfessionalProfile` | embedded in the results and the unified profile | |
+| `extraction/cv-result` | `CVExtractionResult` | CV Extraction → Core | `extraction-results/<jobId>/<taskId>/cv.json` |
+| `extraction/linkedin-result` | `LinkedInExtractionResult` | LinkedIn Extraction → Core | `extraction-results/<jobId>/<taskId>/linkedin.json` |
+| `extraction/github-result` | `GitHubAnalysisResult` | GitHub Analysis → Core | `extraction-results/<jobId>/<taskId>/github.json` |
+| `profile/unified-profile` | `UnifiedProfile` | Core aggregation → Website Service | `profiles.profile_data` (JSONB) |
+| `website/website-draft` | `WebsiteDraft` | Website Generator → Core, Frontend, Publisher | `websites.draft_content` (JSONB) |
+| `website/sections/*` | `HeroSectionData` ... `ContactSectionData` | inside a draft section's `data` | |
+| `website/template-manifest` | `TemplateManifest` | template package → Generator, Core, renderer | `packages/templates/<id>/template.json` |
+
+Rules worth knowing:
+
+- **Profile fields are all optional.** Omit what is unknown and never invent it. An empty array
+  means "known to be empty" (Shared Data Contracts §4.8). Each list item needs at least one field.
+- **Dates keep the source precision**: `YYYY`, `YYYY-MM` or `YYYY-MM-DD`.
+- **GitHub technologies** are `OBSERVED` or `INFERRED` and always carry at least one evidence entry.
+- **The unified profile** lists in `sourceTypes` only the sources that completed, always including
+  `CV`. Table-column ids (job, user, profile) are not repeated inside it, and warnings live in `jobs.warnings`.
+  `provenance[].path` is a JSON Pointer into the stored document (`/profile/skills/3`).
+- **A draft section** is `{id, type, data}`. `data` must match the schema of its `type`. Sections the
+  profile has no data for are left out, not emitted empty. Text is plain text (the renderer escapes
+  it), URLs are `https://`. Section ids must be unique within a draft; JSON Schema cannot check that,
+  so the generator does.
+- **Draft ids are informational**: the `websites` columns (`template_id`, `template_version`,
+  `status`) are authoritative.
+
+**Fixture set.** The valid examples describe one fictional person, Alex Popescu, consistently across
+CV result, LinkedIn result, GitHub result, unified profile and website draft (job `job-456`, tasks
+`task-789` CV, `task-790` GitHub, `task-791` LinkedIn, GitHub user `alex-popescu-dev`, template
+`classic`). AI-8, FE-28 and the end-to-end test reuse them.
 
 ## Error codes
 
@@ -170,5 +210,6 @@ event = CvExtractRequested.model_validate_json(message_body)
 
 Field names stay camelCase, exactly as on the wire. The generated types are for typing and
 parsing. Pydantic cannot express a few schema rules (the `Z` suffix on timestamps, the
-`https://` prefix on URLs), so a consumer that must enforce the whole contract validates
-against the JSON Schema itself (ajv in Node, `jsonschema` in Python).
+`https://` prefix on URLs, "at least one field" on contact and profile items), so a consumer
+that must enforce the whole contract validates against the JSON Schema itself (ajv in Node,
+`jsonschema` in Python).

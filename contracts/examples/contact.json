@@ -1,0 +1,9 @@
+{
+  "email": "alex@example.com",
+  "links": [
+    {
+      "label": "GitHub",
+      "url": "https://github.com/alex-popescu-dev"
+    }
+  ]
+}

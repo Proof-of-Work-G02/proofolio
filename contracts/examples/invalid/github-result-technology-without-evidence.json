@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "jobId": "job-456",
+  "taskId": "task-790",
+  "sourceType": "GITHUB",
+  "githubUsername": "alex-popescu-dev",
+  "repositories": [
+    {
+      "name": "portfolio-api",
+      "url": "https://github.com/alex-popescu-dev/portfolio-api",
+      "description": "Backend API for a portfolio application.",
+      "primaryLanguage": "Java",
+      "technologies": [
+        {
+          "name": "Java",
+          "certainty": "OBSERVED",
+          "evidence": [
+            {
+              "kind": "GITHUB_METADATA",
+              "reference": "primaryLanguage"
+            }
+          ]
+        },
+        {
+          "name": "Maven",
+          "certainty": "INFERRED",
+          "evidence": []
+        },
+        {
+          "name": "Docker",
+          "certainty": "OBSERVED",
+          "evidence": [
+            {
+              "kind": "FILE_PATH",
+              "path": "Dockerfile"
+            },
+            {
+              "kind": "README",
+              "reference": "README.md#running-with-docker"
+            }
+          ]
+        }
+      ],
+      "features": [
+        "User authentication",
+        "Portfolio management"
+      ],
+      "structure": [
+        "src/main/java/",
+        "pom.xml",
+        "Dockerfile",
+        "README.md"
+      ],
+      "projectSummary": "A Java backend project for managing portfolio information."
+    }
+  ]
+}
