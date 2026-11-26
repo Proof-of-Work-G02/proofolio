@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "eventId": "550e8400-e29b-41d4-a716-446655440011",
+  "event": "website.failed",
+  "occurredAt": "2026-11-17T14:35:00Z",
+  "jobId": "job-456",
+  "userId": "user-123",
+  "profileId": "profile-456",
+  "websiteId": "website-456",
+  "stage": "WEBSITE_PUBLISHING",
+  "errorCode": "PUBLISH_ASSET_ERROR",
+  "errorMessage": "We could not publish your website. Your draft is safe; please try again.",
+  "retryable": true,
+  "attempts": 3
+}

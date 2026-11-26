@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/events/cv.extract.requested.schema.json",
+  "title": "CvExtractRequested",
+  "description": "Queue `cv-extraction`. Producer: Core Backend (Job Orchestrator). Consumer: CV Extraction Service. SQS Event Contracts §4.1.",
+  "x-queue": "cv-extraction",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "eventId": {
+      "$ref": "../common/fields.schema.json#/$defs/eventId"
+    },
+    "occurredAt": {
+      "$ref": "../common/fields.schema.json#/$defs/occurredAt"
+    },
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "event": {
+      "type": "string",
+      "const": "cv.extract.requested"
+    },
+    "taskId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "userId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "cvS3Key": {
+      "$ref": "../common/fields.schema.json#/$defs/s3Key"
+    },
+    "attempt": {
+      "$ref": "../common/fields.schema.json#/$defs/attempt"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "event",
+    "occurredAt",
+    "jobId",
+    "taskId",
+    "userId",
+    "cvS3Key"
+  ],
+  "additionalProperties": false
+}

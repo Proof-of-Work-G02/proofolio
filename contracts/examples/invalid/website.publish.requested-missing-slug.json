@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "eventId": "550e8400-e29b-41d4-a716-446655440012",
+  "event": "website.publish.requested",
+  "occurredAt": "2026-11-17T14:34:00Z",
+  "jobId": "job-456",
+  "userId": "user-123",
+  "websiteId": "website-456"
+}

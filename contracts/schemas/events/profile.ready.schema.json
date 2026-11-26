@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/events/profile.ready.schema.json",
+  "title": "ProfileReady",
+  "description": "Queue `website-generation`. Producer: Core Backend (Profile Aggregator). Consumer: Website Service (Website Generator). SQS Event Contracts §6.1.",
+  "x-queue": "website-generation",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "eventId": {
+      "$ref": "../common/fields.schema.json#/$defs/eventId"
+    },
+    "occurredAt": {
+      "$ref": "../common/fields.schema.json#/$defs/occurredAt"
+    },
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "event": {
+      "type": "string",
+      "const": "profile.ready"
+    },
+    "userId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "profileId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "templateId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "event",
+    "occurredAt",
+    "jobId",
+    "userId",
+    "profileId",
+    "templateId"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/common/failure-stage.schema.json",
+  "title": "FailureStage",
+  "description": "Where a failure happened. Failure Handling Design §3.1.",
+  "type": "string",
+  "enum": [
+    "CV_EXTRACTION",
+    "GITHUB_ANALYSIS",
+    "LINKEDIN_EXTRACTION",
+    "WEBSITE_GENERATION",
+    "WEBSITE_PUBLISHING"
+  ]
+}

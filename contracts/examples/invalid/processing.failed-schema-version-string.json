@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1",
+  "eventId": "550e8400-e29b-41d4-a716-446655440010",
+  "event": "processing.failed",
+  "occurredAt": "2026-11-17T14:31:00Z",
+  "jobId": "job-456",
+  "taskId": "task-790",
+  "userId": "user-123",
+  "sourceType": "GITHUB",
+  "stage": "GITHUB_ANALYSIS",
+  "errorCode": "SOURCE_NOT_FOUND",
+  "errorMessage": "GitHub could not be imported. Your site was built from your CV.",
+  "retryable": false,
+  "attempts": 1
+}

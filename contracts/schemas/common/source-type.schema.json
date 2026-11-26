@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/common/source-type.schema.json",
+  "title": "SourceType",
+  "description": "Information source of a processing task. Shared Data Contracts §3.1.",
+  "type": "string",
+  "enum": [
+    "CV",
+    "GITHUB",
+    "LINKEDIN"
+  ]
+}

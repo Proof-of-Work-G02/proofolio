@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/common/website-status.schema.json",
+  "title": "WebsiteStatus",
+  "description": "websites.status, owned by Website Service. Failure Handling Design §6.3 plus UNPUBLISHED (slug takeover, Database Architecture §5.10, Website Service).",
+  "type": "string",
+  "enum": [
+    "GENERATING",
+    "GENERATION_FAILED",
+    "PREVIEW_READY",
+    "PUBLISHING",
+    "PUBLISH_FAILED",
+    "PUBLISHED",
+    "UNPUBLISHED"
+  ]
+}

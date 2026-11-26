@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/common/error-code.schema.json",
+  "title": "ErrorCode",
+  "description": "The single error-code enum for every event and HTTP error body. Failure Handling Design §3.4, Shared Data Contracts §3.3. Services may add codes but never repurpose one.",
+  "type": "string",
+  "enum": [
+    "SOURCE_UNREADABLE",
+    "SOURCE_NOT_FOUND",
+    "SOURCE_EMPTY",
+    "AI_OUTPUT_INVALID",
+    "AI_PROVIDER_UNAVAILABLE",
+    "EXTERNAL_RATE_LIMITED",
+    "STORAGE_ERROR",
+    "INTERNAL_ERROR",
+    "TIMEOUT",
+    "RETRIES_EXHAUSTED",
+    "SLUG_TAKEN",
+    "SLUG_CONFLICT",
+    "PUBLISH_ASSET_ERROR",
+    "JOB_NOT_RETRYABLE",
+    "RATE_LIMITED"
+  ]
+}

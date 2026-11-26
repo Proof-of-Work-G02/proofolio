@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/events/website.publish.requested.schema.json",
+  "title": "WebsitePublishRequested",
+  "description": "Queue `website-publishing`. Producer: Website Service (transactional outbox). Consumer: Website Service (Website Publisher). SQS Event Contracts §6.3.",
+  "x-queue": "website-publishing",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "eventId": {
+      "$ref": "../common/fields.schema.json#/$defs/eventId"
+    },
+    "occurredAt": {
+      "$ref": "../common/fields.schema.json#/$defs/occurredAt"
+    },
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "event": {
+      "type": "string",
+      "const": "website.publish.requested"
+    },
+    "userId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "websiteId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "slug": {
+      "$ref": "../common/fields.schema.json#/$defs/slug"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "event",
+    "occurredAt",
+    "jobId",
+    "userId",
+    "websiteId",
+    "slug"
+  ],
+  "additionalProperties": false
+}

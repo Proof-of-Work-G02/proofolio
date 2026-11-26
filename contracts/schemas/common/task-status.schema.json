@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/common/task-status.schema.json",
+  "title": "TaskStatus",
+  "description": "job_tasks.status, owned by Core Backend. Failure Handling Design §6.2.",
+  "type": "string",
+  "enum": [
+    "PENDING",
+    "COMPLETED",
+    "FAILED"
+  ]
+}

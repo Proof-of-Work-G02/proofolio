@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/events/linkedin.extract.requested.schema.json",
+  "title": "LinkedinExtractRequested",
+  "description": "Queue `linkedin-extraction`. Producer: Core Backend (Job Orchestrator). Consumer: LinkedIn Extraction Service. SQS Event Contracts §4.3.",
+  "x-queue": "linkedin-extraction",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "eventId": {
+      "$ref": "../common/fields.schema.json#/$defs/eventId"
+    },
+    "occurredAt": {
+      "$ref": "../common/fields.schema.json#/$defs/occurredAt"
+    },
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "event": {
+      "type": "string",
+      "const": "linkedin.extract.requested"
+    },
+    "taskId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "userId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "linkedinS3Key": {
+      "$ref": "../common/fields.schema.json#/$defs/s3Key"
+    },
+    "attempt": {
+      "$ref": "../common/fields.schema.json#/$defs/attempt"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "event",
+    "occurredAt",
+    "jobId",
+    "taskId",
+    "userId",
+    "linkedinS3Key"
+  ],
+  "additionalProperties": false
+}

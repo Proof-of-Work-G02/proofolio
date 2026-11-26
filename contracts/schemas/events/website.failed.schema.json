@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/events/website.failed.schema.json",
+  "title": "WebsiteFailed",
+  "description": "Queue `processing-results`. Producer: Website Service (Generator or Publisher). Consumer: Core Backend (Job Orchestrator). SQS Event Contracts §6.5; Failure Handling Design §3.3.",
+  "x-queue": "processing-results",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "eventId": {
+      "$ref": "../common/fields.schema.json#/$defs/eventId"
+    },
+    "occurredAt": {
+      "$ref": "../common/fields.schema.json#/$defs/occurredAt"
+    },
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "event": {
+      "type": "string",
+      "const": "website.failed"
+    },
+    "userId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "profileId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "websiteId": {
+      "$ref": "../common/fields.schema.json#/$defs/id",
+      "description": "Absent when the failure happened before the websites row was created."
+    },
+    "stage": {
+      "allOf": [
+        {
+          "$ref": "../common/failure-stage.schema.json"
+        }
+      ],
+      "enum": [
+        "WEBSITE_GENERATION",
+        "WEBSITE_PUBLISHING"
+      ]
+    },
+    "errorCode": {
+      "$ref": "../common/error-code.schema.json"
+    },
+    "errorMessage": {
+      "$ref": "../common/fields.schema.json#/$defs/errorMessage"
+    },
+    "retryable": {
+      "description": "Whether the user can reasonably retry as is.",
+      "type": "boolean"
+    },
+    "attempts": {
+      "description": "Processing attempts made before giving up.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "diagnosticsS3Key": {
+      "$ref": "../common/fields.schema.json#/$defs/s3Key"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "event",
+    "occurredAt",
+    "jobId",
+    "userId",
+    "profileId",
+    "stage",
+    "errorCode",
+    "errorMessage",
+    "retryable",
+    "attempts"
+  ],
+  "additionalProperties": false
+}

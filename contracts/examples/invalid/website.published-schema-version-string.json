@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1",
+  "eventId": "550e8400-e29b-41d4-a716-446655440007",
+  "event": "website.published",
+  "occurredAt": "2026-11-17T14:35:00Z",
+  "jobId": "job-456",
+  "userId": "user-123",
+  "websiteId": "website-456",
+  "slug": "alex-popescu",
+  "status": "PUBLISHED",
+  "url": "https://alex-popescu.ourdomain.com"
+}

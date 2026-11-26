@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/events/processing.failed.schema.json",
+  "title": "ProcessingFailed",
+  "description": "Queue `processing-results`. Producer: CV / GitHub / LinkedIn services. Consumer: Core Backend (Job Orchestrator). SQS Event Contracts §5.2; Failure Handling Design §3.2.",
+  "x-queue": "processing-results",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "eventId": {
+      "$ref": "../common/fields.schema.json#/$defs/eventId"
+    },
+    "occurredAt": {
+      "$ref": "../common/fields.schema.json#/$defs/occurredAt"
+    },
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "event": {
+      "type": "string",
+      "const": "processing.failed"
+    },
+    "taskId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "userId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "sourceType": {
+      "$ref": "../common/source-type.schema.json"
+    },
+    "stage": {
+      "allOf": [
+        {
+          "$ref": "../common/failure-stage.schema.json"
+        }
+      ],
+      "enum": [
+        "CV_EXTRACTION",
+        "GITHUB_ANALYSIS",
+        "LINKEDIN_EXTRACTION"
+      ]
+    },
+    "errorCode": {
+      "$ref": "../common/error-code.schema.json"
+    },
+    "errorMessage": {
+      "$ref": "../common/fields.schema.json#/$defs/errorMessage"
+    },
+    "retryable": {
+      "description": "Whether the user can reasonably retry as is.",
+      "type": "boolean"
+    },
+    "attempts": {
+      "description": "Processing attempts made before giving up.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "diagnosticsS3Key": {
+      "$ref": "../common/fields.schema.json#/$defs/s3Key"
+    },
+    "attempt": {
+      "$ref": "../common/fields.schema.json#/$defs/attempt"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "event",
+    "occurredAt",
+    "jobId",
+    "taskId",
+    "userId",
+    "sourceType",
+    "stage",
+    "errorCode",
+    "errorMessage",
+    "retryable",
+    "attempts"
+  ],
+  "additionalProperties": false
+}
