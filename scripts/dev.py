@@ -15,6 +15,10 @@
     python scripts/dev.py contracts-check     validate + generated types up to date + types smoke test
     python scripts/dev.py contracts-breaking  breaking-change check against origin/main
 
+  CI (KAN-9):
+    python scripts/dev.py test                what the CI checks run, minus Docker: contracts-check + contracts-breaking
+                                              (add `smoke` after `up` for the compose-smoke check)
+
 Uses .env when it exists, otherwise .env.example. Only needs Python 3.10+ and Docker.
 """
 
@@ -139,6 +143,12 @@ def cmd_contracts_check() -> None:
     node("test-types.mjs")
 
 
+def cmd_test() -> None:
+    # Same as CI's contracts job. The service checks join here as the teams add them (BE-9, FE-21, AI-7).
+    cmd_contracts_check()
+    node("breaking-check.mjs")
+
+
 COMMANDS = {
     "up": cmd_up,
     "down": cmd_down,
@@ -152,6 +162,7 @@ COMMANDS = {
     "contracts-types": lambda: node("generate-types.mjs"),
     "contracts-check": cmd_contracts_check,
     "contracts-breaking": lambda: node("breaking-check.mjs", *sys.argv[2:]),
+    "test": cmd_test,
 }
 DOCKER_COMMANDS = {"up", "down", "smoke", "reset", "ps", "logs"}
 
