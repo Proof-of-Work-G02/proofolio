@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "company": "Example Company",
+      "position": "Software Developer Intern",
+      "description": "Developed backend APIs in Java for an internal reporting tool.",
+      "endDate": "2026-09",
+      "isCurrent": false
+    }
+  ]
+}

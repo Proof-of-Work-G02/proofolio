@@ -1,0 +1,14 @@
+{
+  "title": "Alex Popescu",
+  "subtitle": "Software Engineering Student",
+  "links": [
+    {
+      "label": "GitHub",
+      "url": "http://github.com/x"
+    },
+    {
+      "label": "LinkedIn",
+      "url": "https://www.linkedin.com/in/alex-popescu-example"
+    }
+  ]
+}

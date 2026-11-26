@@ -36,10 +36,11 @@ const walk = (dir) =>
   });
 
 // --- 1. Bundle: every schema file becomes one $defs entry named by its title. -----------
-// Cross-file $refs are rewritten to point inside the bundle: a ref to a titled schema
-// (an enum such as ErrorCode) becomes "#/$defs/ErrorCode" so it is emitted once; a ref to a
-// shared field type (common/fields.schema.json#/$defs/...) is inlined, so generated fields
-// carry their constraints directly instead of wrapper classes.
+// $refs are rewritten to point inside the bundle:
+//   * a whole titled schema (an enum such as ErrorCode)  -> "#/$defs/ErrorCode", emitted once;
+//   * a named object definition ($defs/workExperience)   -> hoisted as "#/$defs/WorkExperience";
+//   * a primitive field rule (fields.schema.json $defs)  -> inlined, so generated fields carry
+//     their constraints directly instead of wrapper classes.
 const files = walk(schemasDir)
   .filter((f) => f.endsWith(".schema.json"))
   .sort();
@@ -47,27 +48,43 @@ const byPath = new Map(files.map((f) => [resolve(f), JSON.parse(readFileSync(f, 
 
 const pointer = (doc, ptr) =>
   ptr
-    .replace(/^#\/?/, "")
+    .replace(/^#?\/?/, "")
     .split("/")
     .filter(Boolean)
     .reduce((node, key) => node[key.replaceAll("~1", "/").replaceAll("~0", "~")], doc);
+const pascal = (s) => s.replace(/(^|[-_])(\w)/g, (_, __, c) => c.toUpperCase()).replace(/^\w/, (c) => c.toUpperCase());
+
+const defs = {};
+const hoisted = new Map(); // "file#pointer" -> bundle name
 
 function rewrite(node, fromFile) {
   if (Array.isArray(node)) return node.map((n) => rewrite(n, fromFile));
   if (!node || typeof node !== "object") return node;
   const out = {};
   for (const [key, value] of Object.entries(node)) {
-    if (key === "$ref" && typeof value === "string" && !value.startsWith("#")) {
+    if (key === "$ref" && typeof value === "string") {
       const [path, frag = ""] = value.split("#");
-      const target = resolve(dirname(fromFile), path);
-      const doc = byPath.get(target);
+      const targetFile = path ? resolve(dirname(fromFile), path) : fromFile;
+      const doc = byPath.get(targetFile);
       if (!doc) throw new Error(`${relative(schemasDir, fromFile)}: cannot resolve $ref ${value}`);
+      const target = frag ? pointer(doc, frag) : doc;
+      if (target === undefined) throw new Error(`${relative(schemasDir, fromFile)}: $ref ${value} points nowhere`);
       if (!frag && doc.title) {
         out.$ref = `#/$defs/${doc.title}`;
+      } else if (frag && target.type === "object" && target.properties) {
+        const id = `${targetFile}#${frag}`;
+        if (!hoisted.has(id)) {
+          const name = target.title ?? pascal(frag.split("/").pop());
+          if (defs[name] || [...hoisted.values()].includes(name)) throw new Error(`Bundle name clash: "${name}" (${value})`);
+          hoisted.set(id, name);
+          defs[name] = rewrite(target, targetFile);
+        }
+        out.$ref = `#/$defs/${hoisted.get(id)}`;
       } else {
-        // Inline the referenced definition (and keep rewriting inside it).
-        Object.assign(out, rewrite(frag ? pointer(doc, frag) : doc, target));
+        Object.assign(out, rewrite(target, targetFile)); // inline primitives and composites
       }
+    } else if (key === "$defs") {
+      // Definitions are pulled in where they are referenced (hoisted or inlined).
     } else if (!["$schema", "$id", "x-queue"].includes(key)) {
       out[key] = rewrite(value, fromFile);
     }
@@ -75,9 +92,8 @@ function rewrite(node, fromFile) {
   return out;
 }
 
-const defs = {};
 for (const [file, schema] of byPath) {
-  if (!schema.title || schema.$defs && !schema.type) continue; // common/fields only holds $defs
+  if (!schema.title || (schema.$defs && !schema.type)) continue; // common/fields only holds $defs
   if (defs[schema.title]) throw new Error(`Two schemas share the title "${schema.title}"`);
   defs[schema.title] = rewrite(schema, file);
 }

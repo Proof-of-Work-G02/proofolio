@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "name": "portfolio-api",
+      "description": "Backend API for managing portfolio information.",
+      "url": "https://github.com/alex-popescu-dev/portfolio-api",
+      "technologies": [
+        "Java",
+        "Maven",
+        "Docker"
+      ]
+    }
+  ]
+}

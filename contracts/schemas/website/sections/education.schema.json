@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/website/sections/education.schema.json",
+  "title": "EducationSectionData",
+  "description": "`data` of a EDUCATION section in a website draft. From education; omit the section when empty. Plain text only; URLs must be https. Template System Spec §5.",
+  "type": "object",
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "institution": {
+            "$ref": "../../common/fields.schema.json#/$defs/text"
+          },
+          "degree": {
+            "$ref": "../../common/fields.schema.json#/$defs/text"
+          },
+          "fieldOfStudy": {
+            "$ref": "../../common/fields.schema.json#/$defs/text"
+          },
+          "startDate": {
+            "$ref": "../../common/fields.schema.json#/$defs/partialDate"
+          },
+          "endDate": {
+            "$ref": "../../common/fields.schema.json#/$defs/partialDate"
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "institution"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "items"
+  ]
+}

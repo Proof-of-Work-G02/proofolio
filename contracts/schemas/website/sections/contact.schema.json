@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/website/sections/contact.schema.json",
+  "title": "ContactSectionData",
+  "description": "`data` of a CONTACT section in a website draft. At least one field. Plain text only; URLs must be https. Template System Spec §5.",
+  "type": "object",
+  "properties": {
+    "email": {
+      "$ref": "../../common/fields.schema.json#/$defs/email"
+    },
+    "phone": {
+      "$ref": "../../common/fields.schema.json#/$defs/text"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "$ref": "../../common/fields.schema.json#/$defs/link"
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "minProperties": 1
+}

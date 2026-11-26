@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/extraction/cv-result.schema.json",
+  "title": "CVExtractionResult",
+  "description": "Output of the CV Extraction Service, key <jobId>/<taskId>/cv.json. Stored in the extraction-results bucket. Shared Data Contracts §3, §5.",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "taskId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "sourceType": {
+      "type": "string",
+      "const": "CV"
+    },
+    "profile": {
+      "$ref": "../profile/professional-profile.schema.json"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "jobId",
+    "taskId",
+    "sourceType",
+    "profile"
+  ]
+}

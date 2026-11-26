@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/extraction/github-result.schema.json",
+  "title": "GitHubAnalysisResult",
+  "description": "Output of the GitHub Analysis Service, key <jobId>/<taskId>/github.json. Public data only. Stored in the extraction-results bucket. Shared Data Contracts §3, §7.",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "taskId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "sourceType": {
+      "type": "string",
+      "const": "GITHUB"
+    },
+    "githubUsername": {
+      "$ref": "../common/fields.schema.json#/$defs/githubUsername"
+    },
+    "repositories": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/repository"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "jobId",
+    "taskId",
+    "sourceType",
+    "githubUsername",
+    "repositories"
+  ],
+  "$defs": {
+    "repository": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "url": {
+          "$ref": "../common/fields.schema.json#/$defs/httpsUrl"
+        },
+        "description": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "primaryLanguage": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "technologies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/technology"
+          }
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "$ref": "../common/fields.schema.json#/$defs/text"
+          }
+        },
+        "structure": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Relevant files and directories."
+        },
+        "projectSummary": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared Data Contracts §7.3.",
+      "required": [
+        "name",
+        "url"
+      ]
+    },
+    "technology": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "../common/fields.schema.json#/$defs/text"
+        },
+        "certainty": {
+          "type": "string",
+          "enum": [
+            "OBSERVED",
+            "INFERRED"
+          ],
+          "description": "OBSERVED: reported by GitHub or explicit in inspected files. INFERRED: suggested by indirect evidence; never promoted to a verified skill on its own."
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared Data Contracts §7.4.",
+      "required": [
+        "name",
+        "certainty",
+        "evidence"
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "GITHUB_METADATA",
+            "FILE_PATH",
+            "README"
+          ]
+        },
+        "path": {
+          "description": "Repository-relative file path.",
+          "type": "string",
+          "minLength": 1
+        },
+        "reference": {
+          "description": "Metadata field or other source reference.",
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "$ref": "../common/fields.schema.json#/$defs/httpsUrl"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Shared Data Contracts §7.5.",
+      "required": [
+        "kind"
+      ]
+    }
+  }
+}

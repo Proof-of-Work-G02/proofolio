@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "jobId": "job-456",
+  "sourceType": "LINKEDIN",
+  "profile": {
+    "fullName": "Alex Popescu",
+    "headline": "Software Engineering Student",
+    "location": "Cluj-Napoca, Romania",
+    "links": [
+      "https://www.linkedin.com/in/alex-popescu-example"
+    ],
+    "summary": "Interested in backend engineering and AI systems.",
+    "workExperience": [
+      {
+        "company": "Example Company",
+        "position": "Software Developer Intern",
+        "startDate": "2026-07",
+        "endDate": "2026-09"
+      }
+    ],
+    "education": [
+      {
+        "institution": "Example University",
+        "degree": "Bachelor's Degree",
+        "fieldOfStudy": "Computer Science"
+      }
+    ],
+    "skills": [
+      "Java",
+      "Spring Boot",
+      "Docker"
+    ],
+    "certifications": [],
+    "volunteering": [
+      {
+        "organization": "Code Club Cluj",
+        "role": "Mentor",
+        "description": "Taught Python basics to high-school students.",
+        "startDate": "2025-02"
+      }
+    ]
+  }
+}

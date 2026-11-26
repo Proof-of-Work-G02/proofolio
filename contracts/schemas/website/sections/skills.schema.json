@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/website/sections/skills.schema.json",
+  "title": "SkillsSectionData",
+  "description": "`data` of a SKILLS section in a website draft. From skills. Plain text only; URLs must be https. Template System Spec §5.",
+  "type": "object",
+  "properties": {
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "../../common/fields.schema.json#/$defs/text"
+      },
+      "minItems": 1
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "$ref": "../../common/fields.schema.json#/$defs/text"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "../../common/fields.schema.json#/$defs/text"
+            },
+            "minItems": 1
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "label",
+          "items"
+        ]
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "items"
+  ]
+}

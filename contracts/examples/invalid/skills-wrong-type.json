@@ -1,0 +1,20 @@
+{
+  "items": "Java",
+  "groups": [
+    {
+      "label": "Languages",
+      "items": [
+        "Java",
+        "Python"
+      ]
+    },
+    {
+      "label": "Tools",
+      "items": [
+        "PostgreSQL",
+        "Spring Boot",
+        "Docker"
+      ]
+    }
+  ]
+}
