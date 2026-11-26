@@ -227,6 +227,57 @@ class ErrorCode(StrEnum):
     PUBLISH_ASSET_ERROR = 'PUBLISH_ASSET_ERROR'
     JOB_NOT_RETRYABLE = 'JOB_NOT_RETRYABLE'
     RATE_LIMITED = 'RATE_LIMITED'
+    BAD_REQUEST = 'BAD_REQUEST'
+    UNAUTHENTICATED = 'UNAUTHENTICATED'
+    FORBIDDEN = 'FORBIDDEN'
+    CSRF_INVALID = 'CSRF_INVALID'
+    NOT_FOUND = 'NOT_FOUND'
+    NOT_READY = 'NOT_READY'
+    FILE_TOO_LARGE = 'FILE_TOO_LARGE'
+    UNSUPPORTED_FILE_TYPE = 'UNSUPPORTED_FILE_TYPE'
+    VALIDATION_ERROR = 'VALIDATION_ERROR'
+    SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE'
+
+
+class Detail(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    field: str = Field(..., min_length=1)
+    message: str = Field(
+        ...,
+        description='Short, safe to show to a user. No stack traces, CV text, personal data or secrets.',
+        max_length=500,
+        min_length=1,
+    )
+
+
+class Error(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    code: ErrorCode
+    message: str = Field(
+        ...,
+        description='Short, safe to show to a user. No stack traces, CV text, personal data or secrets.',
+        max_length=500,
+        min_length=1,
+    )
+    requestId: str = Field(
+        ..., description='Value of X-Request-Id, for support and tracing.', min_length=1
+    )
+    details: list[Detail] | None = Field(
+        None,
+        description='Field-level problems, only for 422 VALIDATION_ERROR.',
+        min_length=1,
+    )
+
+
+class ErrorResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    error: Error
 
 
 class Kind(StrEnum):
@@ -339,6 +390,21 @@ class GithubAnalyzeRequested(BaseModel):
     )
 
 
+class JobError(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    code: ErrorCode
+    message: str = Field(
+        ...,
+        description='Short, safe to show to a user. No stack traces, CV text, personal data or secrets.',
+        max_length=500,
+        min_length=1,
+    )
+    stage: FailureStage
+    retryable: bool
+
+
 class JobStatus(StrEnum):
     QUEUED = 'QUEUED'
     PROCESSING = 'PROCESSING'
@@ -348,6 +414,28 @@ class JobStatus(StrEnum):
     PUBLISHING = 'PUBLISHING'
     PUBLISHED = 'PUBLISHED'
     FAILED = 'FAILED'
+
+
+class SourceType1(StrEnum):
+    GITHUB = 'GITHUB'
+    LINKEDIN = 'LINKEDIN'
+
+
+class JobWarning(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    sourceType: SourceType1 = Field(
+        ...,
+        description='Only optional sources produce warnings; a CV failure fails the job.',
+    )
+    errorCode: ErrorCode
+    message: str = Field(
+        ...,
+        description='Short, safe to show to a user. No stack traces, CV text, personal data or secrets.',
+        max_length=500,
+        min_length=1,
+    )
 
 
 class Language(BaseModel):
@@ -511,6 +599,73 @@ class ProjectsSectionData(BaseModel):
     items: list[Item2] = Field(..., min_length=1)
 
 
+class PublishRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    slug: str = Field(
+        ...,
+        description='Subdomain slug: lowercase letters, digits and hyphens, a valid DNS label of at most 63 characters. Website Service doc.',
+        pattern='^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$',
+    )
+
+
+class Status(StrEnum):
+    PUBLISHING = 'PUBLISHING'
+    PUBLISHED = 'PUBLISHED'
+
+
+class PublishResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    websiteId: str = Field(
+        ...,
+        description='Opaque identifier. Never parse or derive meaning from it.',
+        max_length=128,
+        min_length=1,
+    )
+    slug: str = Field(
+        ...,
+        description='Subdomain slug: lowercase letters, digits and hyphens, a valid DNS label of at most 63 characters. Website Service doc.',
+        pattern='^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$',
+    )
+    status: Status
+    url: AnyUrl | None = Field(None, description='Absolute https URL.')
+
+
+class RenderedFile(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        regex_engine="python-re",
+    )
+    path: str = Field(
+        ...,
+        description="Path relative to the site root, for example index.html or assets/style.css. No leading slash, no '..'.",
+        pattern='^(?!/)(?!.*(^|/)\\.\\.(/|$))[A-Za-z0-9._/-]+$',
+    )
+    contentType: str = Field(
+        ..., pattern='^[a-z]+/[a-z0-9.+-]+(; ?charset=[A-Za-z0-9-]+)?$'
+    )
+    contentBase64: str = Field(
+        ...,
+        json_schema_extra={'contentEncoding': 'base64'},
+        pattern='^[A-Za-z0-9+/]*={0,2}$',
+    )
+
+
+class RenderResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    files: list[RenderedFile] = Field(..., min_length=1)
+    rendererVersion: str | None = Field(
+        None,
+        description='Semantic version, for example 1.0.0.',
+        pattern='^[0-9]+\\.[0-9]+\\.[0-9]+$',
+    )
+
+
 class Feature(RootModel[str]):
     root: str = Field(
         ...,
@@ -654,6 +809,34 @@ class TemplateManifest(BaseModel):
     )
 
 
+class TemplateSummary(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    id: str = Field(
+        ...,
+        description='Readable template id, for example classic (Template System Spec §4).',
+        pattern='^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$',
+    )
+    version: str = Field(
+        ...,
+        description='Semantic version, for example 1.0.0.',
+        pattern='^[0-9]+\\.[0-9]+\\.[0-9]+$',
+    )
+    name: str = Field(
+        ...,
+        description='Plain text (no HTML or Markdown; the renderer escapes everything).',
+        min_length=1,
+    )
+    description: str = Field(
+        ...,
+        description='Plain text (no HTML or Markdown; the renderer escapes everything).',
+        min_length=1,
+    )
+    thumbnailUrl: AnyUrl = Field(..., description='Absolute https URL.')
+    sections: Sections
+
+
 class Volunteering(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -685,7 +868,7 @@ class Volunteering(BaseModel):
     )
 
 
-class Sections2(BaseModel):
+class Sections3(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -698,7 +881,7 @@ class Sections2(BaseModel):
     data: AboutSectionData
 
 
-class Sections3(BaseModel):
+class Sections4(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -711,7 +894,7 @@ class Sections3(BaseModel):
     data: ExperienceSectionData
 
 
-class Sections4(BaseModel):
+class Sections5(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -724,7 +907,7 @@ class Sections4(BaseModel):
     data: EducationSectionData
 
 
-class Sections5(BaseModel):
+class Sections6(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -737,7 +920,7 @@ class Sections5(BaseModel):
     data: SkillsSectionData
 
 
-class Sections6(BaseModel):
+class Sections7(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -934,6 +1117,42 @@ class WebsiteStatus(StrEnum):
     UNPUBLISHED = 'UNPUBLISHED'
 
 
+class WebsiteSummary(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    websiteId: str = Field(
+        ...,
+        description='Opaque identifier. Never parse or derive meaning from it.',
+        max_length=128,
+        min_length=1,
+    )
+    jobId: str = Field(
+        ...,
+        description='Opaque identifier. Never parse or derive meaning from it.',
+        max_length=128,
+        min_length=1,
+    )
+    status: WebsiteStatus
+    templateId: str = Field(
+        ...,
+        description='Readable template id, for example classic (Template System Spec §4).',
+        pattern='^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$',
+    )
+    slug: str | None = Field(
+        None,
+        description='Present once a slug is reserved.',
+        pattern='^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$',
+    )
+    url: AnyUrl | None = Field(None, description='Present once published.')
+    createdAt: AwareDatetime = Field(
+        ..., description='UTC RFC 3339 timestamp, for example 2026-11-17T14:30:00Z.'
+    )
+    updatedAt: AwareDatetime = Field(
+        ..., description='UTC RFC 3339 timestamp, for example 2026-11-17T14:30:00Z.'
+    )
+
+
 class WorkExperience(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1058,6 +1277,20 @@ class HeroSectionData(BaseModel):
         min_length=1,
     )
     links: list[LinkModel] | None = None
+
+
+class JobTask(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    taskId: str = Field(
+        ...,
+        description='Opaque identifier. Never parse or derive meaning from it.',
+        max_length=128,
+        min_length=1,
+    )
+    sourceType: SourceType
+    status: TaskStatus
 
 
 class LinkedInExtractionResult(BaseModel):
@@ -1237,6 +1470,13 @@ class Repository(BaseModel):
     )
 
 
+class TemplateListResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    templates: list[TemplateSummary]
+
+
 class UnifiedProfile(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1253,7 +1493,7 @@ class UnifiedProfile(BaseModel):
     provenance: list[Provenance] | None = None
 
 
-class Sections1(BaseModel):
+class Sections2(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -1266,7 +1506,7 @@ class Sections1(BaseModel):
     data: HeroSectionData
 
 
-class Sections7(BaseModel):
+class Sections8(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -1279,18 +1519,18 @@ class Sections7(BaseModel):
     data: ContactSectionData
 
 
-class Content(BaseModel):
+class WebsiteContent(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     sections: list[
-        Sections1
-        | Sections2
+        Sections2
         | Sections3
         | Sections4
         | Sections5
         | Sections6
         | Sections7
+        | Sections8
     ] = Field(
         ...,
         description='Ordered sections. Section ids must be unique within the draft (checked by the generator, not expressible in JSON Schema).',
@@ -1328,7 +1568,61 @@ class WebsiteDraft(BaseModel):
         pattern='^[0-9]+\\.[0-9]+\\.[0-9]+$',
     )
     status: WebsiteStatus | None = None
-    content: Content
+    content: WebsiteContent
+
+
+class WebsiteListResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    websites: list[WebsiteSummary]
+
+
+class WebsitePreview(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    schemaVersion: Literal[1] = Field(
+        ..., description='Major contract version. All MVP events use 1.'
+    )
+    websiteId: str = Field(
+        ...,
+        description='Opaque identifier. Never parse or derive meaning from it.',
+        max_length=128,
+        min_length=1,
+    )
+    profileId: str = Field(
+        ...,
+        description='Opaque identifier. Never parse or derive meaning from it.',
+        max_length=128,
+        min_length=1,
+    )
+    templateId: str = Field(
+        ...,
+        description='Readable template id, for example classic (Template System Spec §4).',
+        pattern='^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$',
+    )
+    templateVersion: str = Field(
+        ...,
+        description='Semantic version, for example 1.0.0.',
+        pattern='^[0-9]+\\.[0-9]+\\.[0-9]+$',
+    )
+    status: WebsiteStatus
+    content: WebsiteContent
+
+
+class CreateJobResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    jobId: str = Field(
+        ...,
+        description='Opaque identifier. Never parse or derive meaning from it.',
+        max_length=128,
+        min_length=1,
+    )
+    status: Literal['QUEUED']
+    tasks: list[JobTask] = Field(..., min_length=1)
 
 
 class GitHubAnalysisResult(BaseModel):
@@ -1358,3 +1652,50 @@ class GitHubAnalysisResult(BaseModel):
         pattern='^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$',
     )
     repositories: list[Repository]
+
+
+class JobStatusResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    jobId: str = Field(
+        ...,
+        description='Opaque identifier. Never parse or derive meaning from it.',
+        max_length=128,
+        min_length=1,
+    )
+    status: JobStatus
+    tasks: list[JobTask]
+    websiteId: str | None = Field(
+        None,
+        description='Present once the website exists.',
+        max_length=128,
+        min_length=1,
+    )
+    warnings: list[JobWarning] = Field(
+        ..., description='Always present, empty by default. Skipped optional sources.'
+    )
+    error: JobError | None = None
+    slug: str | None = Field(
+        None,
+        description='Present once published.',
+        pattern='^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$',
+    )
+    url: AnyUrl | None = Field(None, description='Present once published.')
+
+
+class RenderRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    draft: WebsiteDraft
+    templateId: str = Field(
+        ...,
+        description='Readable template id, for example classic (Template System Spec §4).',
+        pattern='^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$',
+    )
+    templateVersion: str = Field(
+        ...,
+        description='Semantic version, for example 1.0.0.',
+        pattern='^[0-9]+\\.[0-9]+\\.[0-9]+$',
+    )

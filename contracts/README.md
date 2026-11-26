@@ -12,7 +12,7 @@ validates against. If a schema and a doc disagree, that is a bug: report it, don
 |---|---|---|---|
 | KAN-6 | Queue events, the error-code enum, statuses | `schemas/events/`, `schemas/common/` | Done |
 | KAN-14 | Documents: profile, extraction results, unified profile, website draft, sections, template manifest | `schemas/profile/`, `schemas/extraction/`, `schemas/website/` | Done |
-| KAN-15 | HTTP API bodies and the render-worker call | `schemas/http/` | Planned |
+| KAN-15 | HTTP API bodies, OpenAPI, the render-worker call, HMAC test vectors | `schemas/http/`, `openapi/`, `hmac/` | Done |
 | KAN-7 | Validation command, generated TypeScript / Python types, breaking-change check | `tooling/` | Done |
 
 ## Layout
@@ -25,6 +25,9 @@ contracts/
     profile/     professional-profile (shared by CV and LinkedIn), unified-profile
     extraction/  cv-result, linkedin-result, github-result (files in the extraction-results bucket)
     website/     website-draft, template-manifest, sections/<type>.schema.json
+    http/        HTTP request and response bodies, the render-worker call
+  openapi/       OpenAPI 3.1: core-api (public /api), website-internal-api (/internal), render-worker-api
+  hmac/          test vectors for service-to-service request signing
   examples/
     <schema>.json                 a valid example, must pass
     invalid/<schema>-<case>.json  must FAIL, one file per broken rule
@@ -108,6 +111,60 @@ CV result, LinkedIn result, GitHub result, unified profile and website draft (jo
 `task-789` CV, `task-790` GitHub, `task-791` LinkedIn, GitHub user `alex-popescu-dev`, template
 `classic`). AI-8, FE-28 and the end-to-end test reuse them.
 
+## HTTP API
+
+Bodies are JSON Schemas in `schemas/http/`; the endpoints, status codes and headers are in the
+OpenAPI 3.1 files in `openapi/`, which reference those schemas (HTTP API Contracts, Template
+System Spec §6–§7).
+
+| Endpoint | Request | Success | Errors (all `ErrorResponse`) |
+|---|---|---|---|
+| `POST /api/jobs` | multipart: `cv`, `templateId`, optional `githubUsername`, `linkedinPdf` | `202 CreateJobResponse` | 400, 401, 403, 413, 415, 422, 429 |
+| `GET /api/jobs/{jobId}` | | `200 JobStatusResponse` | 401, 404 |
+| `POST /api/jobs/{jobId}/retry` | no body | `202 JobStatusResponse` | 409 `JOB_NOT_RETRYABLE` |
+| `GET /api/templates` | | `200 TemplateListResponse` | 401 |
+| `GET /api/websites` | | `200 WebsiteListResponse` | 401 |
+| `GET /api/websites/{id}/preview` | | `200 WebsitePreview` | 404, 409 `NOT_READY` |
+| `POST /api/websites/{id}/publish` | `PublishRequest` | `202 PublishResponse` (`PUBLISHING`), `200` once `PUBLISHED` | 409 `SLUG_TAKEN` / `SLUG_CONFLICT`, 422 |
+| `GET /internal/websites/{id}/preview` | signed | `200 WebsitePreview` | |
+| `POST /internal/websites/{id}/publish` | signed, `PublishRequest` | `202`/`200 PublishResponse` | 409 |
+| `POST /internal/websites/{id}/retry-generation` | signed | `200`, no body | 409 `JOB_NOT_RETRYABLE` |
+| `POST /render` (render worker) | signed, `RenderRequest` | `200 RenderResponse` + `X-Renderer-Version` | 404, 413, 422, 500 `PUBLISH_ASSET_ERROR` |
+
+- **Errors** are always `{ "error": { "code", "message", "requestId", "details"? } }`; `details` only
+  for `422`. Clients branch on `code`, never on `message`.
+- **`JobStatusResponse`**: `warnings` is always present; `error {code, message, stage, retryable}`
+  when `FAILED`; `websiteId`, `slug`, `url` once `PUBLISHED` (enforced by the schema).
+- **`WebsitePreview`** is flat: the draft's `schemaVersion` and `content` next to `websiteId`,
+  `profileId`, `templateId`, `templateVersion`, `status` from the `websites` columns. Never a nested `draft`.
+- **Render worker**: request and response must each stay under **6 MB** (AWS Lambda payload limit);
+  a larger site fails with `500 PUBLISH_ASSET_ERROR`. File paths are relative, without `..`; content is
+  base64. On AWS the same JSON is the Lambda payload and the call uses IAM instead of HMAC.
+
+## Service-to-service signing (HMAC)
+
+Used in local HTTP mode for Core → Website Service (`/internal/*`) and Website Publisher → render
+worker (`/render`). Secret: `INTERNAL_SERVICE_SECRET` (`.env.example`).
+
+```
+canonical = METHOD + "
+" + PATH_WITH_QUERY + "
+" + X-Service-Timestamp + "
+"
+          + X-Actor-User-Id (empty string if absent) + "
+" + hex(SHA-256(raw body bytes))
+X-Service-Signature: v1=<hex(HMAC-SHA256(secret, canonical))>
+```
+
+- `X-Service-Timestamp` is Unix time in seconds. Reject when it differs from now by more than
+  **60 seconds** (either way).
+- Compare signatures in constant time.
+- `X-Actor-User-Id` is part of the signed string, so it cannot be swapped after signing.
+
+`hmac/test-vectors.json` holds valid, tampered-body, tampered-actor, expired, future and
+wrong-secret cases with their canonical strings. The validator re-verifies them on every run; the
+Python verifier (BE-10) and the Node verifier (FE-33) must pass the same vectors.
+
 ## Error codes
 
 One enum, `schemas/common/error-code.schema.json`, used by every event and HTTP error body.
@@ -131,6 +188,16 @@ change) but never repurpose one.
 | `PUBLISH_ASSET_ERROR` | Publishing: render or upload failed | Yes |
 | `JOB_NOT_RETRYABLE` | HTTP only: retry of a job that cannot be retried | No |
 | `RATE_LIMITED` | HTTP only: request, upload or generation limit (`429`) | Yes, later |
+| `BAD_REQUEST` | HTTP only: `400` malformed request, unknown `templateId` | No |
+| `UNAUTHENTICATED` | HTTP only: `401` no or expired session, bad service signature | Sign in again |
+| `FORBIDDEN` | HTTP only: `403` | No |
+| `CSRF_INVALID` | HTTP only: `403` missing or wrong `X-CSRF-Token` | Reload |
+| `NOT_FOUND` | HTTP only: `404`, also for another user's resource (ids cannot be probed) | No |
+| `NOT_READY` | HTTP only: `409` preview requested before a draft exists | Yes, later |
+| `FILE_TOO_LARGE` | HTTP only: `413` upload or render request over the limit | Needs a user change |
+| `UNSUPPORTED_FILE_TYPE` | HTTP only: `415` | Needs a user change |
+| `VALIDATION_ERROR` | HTTP only: `422` invalid field values, with `details[]` | Needs a user change |
+| `SERVICE_UNAVAILABLE` | HTTP only: `503` | Yes, later |
 
 ### Mapping internal error names to the enum
 

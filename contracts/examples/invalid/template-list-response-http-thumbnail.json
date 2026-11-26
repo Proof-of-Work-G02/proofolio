@@ -1,0 +1,42 @@
+{
+  "templates": [
+    {
+      "id": "classic",
+      "version": "1.0.0",
+      "name": "Classic",
+      "description": "Single-page layout with a sticky header.",
+      "thumbnailUrl": "http://static.ourdomain.com/t.webp",
+      "sections": {
+        "required": [
+          "HERO",
+          "ABOUT"
+        ],
+        "optional": [
+          "EXPERIENCE",
+          "EDUCATION",
+          "SKILLS",
+          "PROJECTS",
+          "CONTACT"
+        ]
+      }
+    },
+    {
+      "id": "minimal",
+      "version": "1.0.0",
+      "name": "Minimal",
+      "description": "A quiet, text-first single page.",
+      "thumbnailUrl": "https://static.ourdomain.com/templates/minimal/thumbnail.webp",
+      "sections": {
+        "required": [
+          "HERO"
+        ],
+        "optional": [
+          "ABOUT",
+          "EXPERIENCE",
+          "PROJECTS",
+          "CONTACT"
+        ]
+      }
+    }
+  ]
+}

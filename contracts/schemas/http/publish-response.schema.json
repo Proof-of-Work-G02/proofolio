@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/http/publish-response.schema.json",
+  "title": "PublishResponse",
+  "description": "202 (status PUBLISHING) or 200 once published (status PUBLISHED, with url) for POST .../publish. Failures are reported through the job, not here. 409 SLUG_TAKEN / SLUG_CONFLICT use ErrorResponse. HTTP API Contracts §3.4.",
+  "type": "object",
+  "properties": {
+    "websiteId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "slug": {
+      "$ref": "../common/fields.schema.json#/$defs/slug"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PUBLISHING",
+        "PUBLISHED"
+      ]
+    },
+    "url": {
+      "$ref": "../common/fields.schema.json#/$defs/httpsUrl"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "websiteId",
+    "slug",
+    "status"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "PUBLISHED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "url"
+        ]
+      }
+    }
+  ]
+}

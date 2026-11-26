@@ -1,0 +1,106 @@
+openapi: 3.1.0
+info:
+  title: Proofolio Website Service internal API
+  version: 1.0.0
+  description: |
+    Core Backend -> Website Service. Owner: Website Service (HTTP API Contracts §4, §8).
+    Never exposed publicly. Every request is HMAC-signed (contracts/hmac/test-vectors.json and
+    "Service-to-service signing" in contracts/README.md) and carries the acting user in
+    X-Actor-User-Id, which is trusted only together with a valid signature.
+servers:
+  - url: http://localhost:8001
+    description: Local (docker compose)
+security:
+  - serviceSignature: []
+paths:
+  /internal/websites/{websiteId}/preview:
+    get:
+      operationId: getInternalWebsitePreview
+      parameters:
+        - $ref: "#/components/parameters/WebsiteId"
+        - $ref: "#/components/parameters/ActorUserId"
+        - $ref: "#/components/parameters/ServiceTimestamp"
+      responses:
+        "200":
+          description: WebsitePreview.
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/website-preview.schema.json" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+  /internal/websites/{websiteId}/publish:
+    post:
+      operationId: publishInternalWebsite
+      parameters:
+        - $ref: "#/components/parameters/WebsiteId"
+        - $ref: "#/components/parameters/ActorUserId"
+        - $ref: "#/components/parameters/ServiceTimestamp"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "../schemas/http/publish-request.schema.json" }
+      responses:
+        "200":
+          description: Already published with this slug.
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/publish-response.schema.json" }
+        "202":
+          description: Slug reserved, website PUBLISHING, website.publish.requested written to the outbox.
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/publish-response.schema.json" }
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+  /internal/websites/{websiteId}/retry-generation:
+    post:
+      operationId: retryWebsiteGeneration
+      description: Resets GENERATION_FAILED to GENERATING with a fresh lease before Core re-publishes profile.ready (HTTP API Contracts §4.3).
+      parameters:
+        - $ref: "#/components/parameters/WebsiteId"
+        - $ref: "#/components/parameters/ServiceTimestamp"
+      responses:
+        "200":
+          description: Reset done (no body).
+        "401": { $ref: "#/components/responses/Error" }
+        "404": { $ref: "#/components/responses/Error" }
+        "409":
+          description: JOB_NOT_RETRYABLE (the website is not GENERATION_FAILED).
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/error-response.schema.json" }
+components:
+  securitySchemes:
+    serviceSignature:
+      type: apiKey
+      in: header
+      name: X-Service-Signature
+      description: "v1=<hex HMAC-SHA256(secret, canonical string)>; see contracts/README.md."
+  parameters:
+    WebsiteId:
+      name: websiteId
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+    ActorUserId:
+      name: X-Actor-User-Id
+      in: header
+      required: true
+      description: The signed-in user Core acts for. Part of the signed string.
+      schema: { type: string, minLength: 1 }
+    ServiceTimestamp:
+      name: X-Service-Timestamp
+      in: header
+      required: true
+      description: Unix time in seconds; requests more than 60 s old (or in the future) are rejected.
+      schema: { type: string, pattern: "^[0-9]+$" }
+  responses:
+    Error:
+      description: Standard error body (UNAUTHENTICATED for a bad signature, NOT_FOUND, NOT_READY, SLUG_TAKEN, SLUG_CONFLICT, VALIDATION_ERROR).
+      content:
+        application/json:
+          schema: { $ref: "../schemas/http/error-response.schema.json" }

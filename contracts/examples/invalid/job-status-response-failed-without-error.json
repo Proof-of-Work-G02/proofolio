@@ -1,0 +1,25 @@
+{
+  "jobId": "job-456",
+  "status": "FAILED",
+  "tasks": [
+    {
+      "taskId": "task-789",
+      "sourceType": "CV",
+      "status": "COMPLETED"
+    },
+    {
+      "taskId": "task-790",
+      "sourceType": "GITHUB",
+      "status": "COMPLETED"
+    },
+    {
+      "taskId": "task-791",
+      "sourceType": "LINKEDIN",
+      "status": "COMPLETED"
+    }
+  ],
+  "websiteId": "website-456",
+  "warnings": [],
+  "slug": "alex-popescu",
+  "url": "https://alex-popescu.ourdomain.com"
+}

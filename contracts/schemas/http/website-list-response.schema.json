@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/http/website-list-response.schema.json",
+  "title": "WebsiteListResponse",
+  "description": "200 response of GET /api/websites (My sites): the caller's websites, newest first. HTTP API Contracts §3.6, BE-25.",
+  "type": "object",
+  "properties": {
+    "websites": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/websiteSummary"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "websites"
+  ],
+  "$defs": {
+    "websiteSummary": {
+      "type": "object",
+      "properties": {
+        "websiteId": {
+          "$ref": "../common/fields.schema.json#/$defs/id"
+        },
+        "jobId": {
+          "$ref": "../common/fields.schema.json#/$defs/id"
+        },
+        "status": {
+          "$ref": "../common/website-status.schema.json"
+        },
+        "templateId": {
+          "$ref": "../common/fields.schema.json#/$defs/templateId"
+        },
+        "slug": {
+          "$ref": "../common/fields.schema.json#/$defs/slug",
+          "description": "Present once a slug is reserved."
+        },
+        "url": {
+          "$ref": "../common/fields.schema.json#/$defs/httpsUrl",
+          "description": "Present once published."
+        },
+        "createdAt": {
+          "$ref": "../common/fields.schema.json#/$defs/occurredAt"
+        },
+        "updatedAt": {
+          "$ref": "../common/fields.schema.json#/$defs/occurredAt"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "websiteId",
+        "jobId",
+        "status",
+        "templateId",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  }
+}

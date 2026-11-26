@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "SLUG_ALREADY_USED",
+    "message": "The requested subdomain is unavailable.",
+    "requestId": "req-123"
+  }
+}

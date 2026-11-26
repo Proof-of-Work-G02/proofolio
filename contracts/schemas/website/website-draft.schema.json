@@ -24,6 +24,17 @@
       "$ref": "../common/website-status.schema.json"
     },
     "content": {
+      "$ref": "#/$defs/websiteContent"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "content"
+  ],
+  "$defs": {
+    "websiteContent": {
+      "description": "The ordered sections of the site.",
       "type": "object",
       "properties": {
         "sections": {
@@ -39,14 +50,7 @@
       "required": [
         "sections"
       ]
-    }
-  },
-  "additionalProperties": false,
-  "required": [
-    "schemaVersion",
-    "content"
-  ],
-  "$defs": {
+    },
     "sectionId": {
       "description": "Unique section id within the draft, for example hero.",
       "type": "string",

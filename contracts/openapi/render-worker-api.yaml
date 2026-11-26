@@ -1,0 +1,84 @@
+openapi: 3.1.0
+info:
+  title: Proofolio render worker
+  version: 1.0.0
+  description: |
+    Website Publisher -> render worker (FE-33). Locally an HTTP service in docker compose,
+    HMAC-signed like the internal API. On AWS the same handler runs as a Lambda container image
+    invoked with IAM: the Lambda payload is the RenderRequest JSON and the result is the
+    RenderResponse JSON. Request and response must each stay under 6 MB (the Lambda limit);
+    a larger site fails with 500 PUBLISH_ASSET_ERROR.
+servers:
+  - url: http://localhost:8010
+    description: Local (docker compose)
+paths:
+  /health:
+    get:
+      operationId: health
+      security: []
+      responses:
+        "200":
+          description: Alive.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, const: ok }
+  /render:
+    post:
+      operationId: render
+      security:
+        - serviceSignature: []
+      parameters:
+        - name: X-Service-Timestamp
+          in: header
+          required: true
+          schema: { type: string, pattern: "^[0-9]+$" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "../schemas/http/render-request.schema.json" }
+      responses:
+        "200":
+          description: The static files, byte-identical to the preview render.
+          headers:
+            X-Renderer-Version:
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/render-response.schema.json" }
+        "401":
+          description: UNAUTHENTICATED (missing, tampered or expired signature).
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/error-response.schema.json" }
+        "404":
+          description: NOT_FOUND (unknown template or version).
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/error-response.schema.json" }
+        "413":
+          description: FILE_TOO_LARGE (request over 6 MB).
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/error-response.schema.json" }
+        "422":
+          description: VALIDATION_ERROR (the draft does not match the schemas), with details.
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/error-response.schema.json" }
+        "500":
+          description: PUBLISH_ASSET_ERROR (render failed or output over 6 MB).
+          content:
+            application/json:
+              schema: { $ref: "../schemas/http/error-response.schema.json" }
+components:
+  securitySchemes:
+    serviceSignature:
+      type: apiKey
+      in: header
+      name: X-Service-Signature
+      description: "v1=<hex HMAC-SHA256(secret, canonical string)>; see contracts/README.md."

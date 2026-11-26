@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/http/create-job-response.schema.json",
+  "title": "CreateJobResponse",
+  "description": "202 response of POST /api/jobs (multipart: cv, githubUsername?, linkedinPdf?, templateId). Accepted, not finished. HTTP API Contracts §3.1.",
+  "type": "object",
+  "properties": {
+    "jobId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "status": {
+      "type": "string",
+      "const": "QUEUED"
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/jobTask"
+      },
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "jobId",
+    "status",
+    "tasks"
+  ],
+  "$defs": {
+    "jobTask": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "$ref": "../common/fields.schema.json#/$defs/id"
+        },
+        "sourceType": {
+          "$ref": "../common/source-type.schema.json"
+        },
+        "status": {
+          "$ref": "../common/task-status.schema.json"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "taskId",
+        "sourceType",
+        "status"
+      ]
+    }
+  }
+}

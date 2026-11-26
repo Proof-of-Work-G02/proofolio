@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/common/job-warning.schema.json",
+  "title": "JobWarning",
+  "description": "A skipped optional source, stored in jobs.warnings and returned by GET /api/jobs/{jobId}. Shared Data Contracts §3.4.",
+  "type": "object",
+  "properties": {
+    "sourceType": {
+      "type": "string",
+      "enum": [
+        "GITHUB",
+        "LINKEDIN"
+      ],
+      "description": "Only optional sources produce warnings; a CV failure fails the job."
+    },
+    "errorCode": {
+      "$ref": "../common/error-code.schema.json"
+    },
+    "message": {
+      "$ref": "../common/fields.schema.json#/$defs/errorMessage"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "sourceType",
+    "errorCode",
+    "message"
+  ]
+}

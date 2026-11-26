@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://proofolio.dev/contracts/schemas/http/website-preview.schema.json",
+  "title": "WebsitePreview",
+  "description": "200 response of GET /api/websites/{websiteId}/preview and GET /internal/websites/{websiteId}/preview: the stored draft's fields at the top level plus the authoritative websites columns. Flat, never wrapped in a `draft` key. Shared Data Contracts §9.3.",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/schemaVersion"
+    },
+    "websiteId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "profileId": {
+      "$ref": "../common/fields.schema.json#/$defs/id"
+    },
+    "templateId": {
+      "$ref": "../common/fields.schema.json#/$defs/templateId"
+    },
+    "templateVersion": {
+      "$ref": "../common/fields.schema.json#/$defs/semver"
+    },
+    "status": {
+      "$ref": "../common/website-status.schema.json"
+    },
+    "content": {
+      "$ref": "../website/website-draft.schema.json#/$defs/websiteContent"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "websiteId",
+    "profileId",
+    "templateId",
+    "templateVersion",
+    "status",
+    "content"
+  ]
+}

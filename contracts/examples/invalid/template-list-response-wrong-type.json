@@ -1,0 +1,23 @@
+{
+  "templates": [
+    "classic",
+    {
+      "id": "minimal",
+      "version": "1.0.0",
+      "name": "Minimal",
+      "description": "A quiet, text-first single page.",
+      "thumbnailUrl": "https://static.ourdomain.com/templates/minimal/thumbnail.webp",
+      "sections": {
+        "required": [
+          "HERO"
+        ],
+        "optional": [
+          "ABOUT",
+          "EXPERIENCE",
+          "PROJECTS",
+          "CONTACT"
+        ]
+      }
+    }
+  ]
+}

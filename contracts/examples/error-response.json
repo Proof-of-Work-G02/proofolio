@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "SLUG_TAKEN",
+    "message": "The requested subdomain is unavailable.",
+    "requestId": "req-123"
+  }
+}

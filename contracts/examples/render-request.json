@@ -1,0 +1,134 @@
+{
+  "draft": {
+    "schemaVersion": 1,
+    "websiteId": "website-456",
+    "profileId": "profile-456",
+    "templateId": "classic",
+    "templateVersion": "1.0.0",
+    "status": "PREVIEW_READY",
+    "content": {
+      "sections": [
+        {
+          "id": "hero",
+          "type": "HERO",
+          "data": {
+            "title": "Alex Popescu",
+            "subtitle": "Software Engineering Student",
+            "links": [
+              {
+                "label": "GitHub",
+                "url": "https://github.com/alex-popescu-dev"
+              },
+              {
+                "label": "LinkedIn",
+                "url": "https://www.linkedin.com/in/alex-popescu-example"
+              }
+            ]
+          }
+        },
+        {
+          "id": "about",
+          "type": "ABOUT",
+          "data": {
+            "text": "Computer Science student with hands-on backend experience in Java, now exploring AI systems.",
+            "location": "Cluj-Napoca, Romania"
+          }
+        },
+        {
+          "id": "experience",
+          "type": "EXPERIENCE",
+          "data": {
+            "items": [
+              {
+                "company": "Example Company",
+                "position": "Software Developer Intern",
+                "description": "Developed backend APIs in Java for an internal reporting tool.",
+                "startDate": "2026-07",
+                "endDate": "2026-09",
+                "isCurrent": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "projects",
+          "type": "PROJECTS",
+          "data": {
+            "items": [
+              {
+                "name": "portfolio-api",
+                "description": "Backend API for managing portfolio information.",
+                "url": "https://github.com/alex-popescu-dev/portfolio-api",
+                "technologies": [
+                  "Java",
+                  "Maven",
+                  "Docker"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "skills",
+          "type": "SKILLS",
+          "data": {
+            "items": [
+              "Java",
+              "Python",
+              "PostgreSQL",
+              "Spring Boot",
+              "Docker"
+            ],
+            "groups": [
+              {
+                "label": "Languages",
+                "items": [
+                  "Java",
+                  "Python"
+                ]
+              },
+              {
+                "label": "Tools",
+                "items": [
+                  "PostgreSQL",
+                  "Spring Boot",
+                  "Docker"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "education",
+          "type": "EDUCATION",
+          "data": {
+            "items": [
+              {
+                "institution": "Example University",
+                "degree": "Bachelor's Degree",
+                "fieldOfStudy": "Computer Science",
+                "startDate": "2024",
+                "endDate": "2027"
+              }
+            ]
+          }
+        },
+        {
+          "id": "contact",
+          "type": "CONTACT",
+          "data": {
+            "email": "alex@example.com",
+            "links": [
+              {
+                "label": "GitHub",
+                "url": "https://github.com/alex-popescu-dev"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "templateId": "classic",
+  "templateVersion": "1.0.0"
+}

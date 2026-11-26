@@ -1,0 +1,15 @@
+{
+  "files": [
+    {
+      "path": "assets/style.css",
+      "contentType": "text/css; charset=utf-8",
+      "contentBase64": "Ym9keXtmb250LWZhbWlseTpzeXN0ZW0tdWksc2Fucy1zZXJpZn0K"
+    },
+    {
+      "path": "index.html",
+      "contentType": "text/html; charset=utf-8",
+      "contentBase64": "<h1>hi</h1>"
+    }
+  ],
+  "rendererVersion": "1.0.0"
+}

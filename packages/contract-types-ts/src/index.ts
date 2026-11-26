@@ -6,7 +6,15 @@
  */
 
 /**
- * The single error-code enum for every event and HTTP error body. Failure Handling Design §3.4, Shared Data Contracts §3.3. Services may add codes but never repurpose one.
+ * Information source of a processing task. Shared Data Contracts §3.1.
+ */
+export type SourceType = "CV" | "GITHUB" | "LINKEDIN";
+/**
+ * job_tasks.status, owned by Core Backend. Failure Handling Design §6.2.
+ */
+export type TaskStatus = "PENDING" | "COMPLETED" | "FAILED";
+/**
+ * The single error-code enum for every event and HTTP error body. Failure Handling Design §3.4, Shared Data Contracts §3.3, HTTP API Contracts §6. Services may add codes but never repurpose one.
  */
 export type ErrorCode =
   | "SOURCE_UNREADABLE"
@@ -23,7 +31,17 @@ export type ErrorCode =
   | "SLUG_CONFLICT"
   | "PUBLISH_ASSET_ERROR"
   | "JOB_NOT_RETRYABLE"
-  | "RATE_LIMITED";
+  | "RATE_LIMITED"
+  | "BAD_REQUEST"
+  | "UNAUTHENTICATED"
+  | "FORBIDDEN"
+  | "CSRF_INVALID"
+  | "NOT_FOUND"
+  | "NOT_READY"
+  | "FILE_TOO_LARGE"
+  | "UNSUPPORTED_FILE_TYPE"
+  | "VALIDATION_ERROR"
+  | "SERVICE_UNAVAILABLE";
 /**
  * Where a failure happened. Failure Handling Design §3.1.
  */
@@ -46,18 +64,13 @@ export type JobStatus =
   | "PUBLISHED"
   | "FAILED";
 /**
- * Information source of a processing task. Shared Data Contracts §3.1.
+ * 200 response of GET /api/jobs/{jobId}, and 202 response of POST /api/jobs/{jobId}/retry. HTTP API Contracts §3.2, §3.5.
  */
-export type SourceType = "CV" | "GITHUB" | "LINKEDIN";
+export type JobStatusResponse = JobStatusResponse1;
 /**
- * Website draft section types. Shared Data Contracts §9.4.
+ * 202 (status PUBLISHING) or 200 once published (status PUBLISHED, with url) for POST .../publish. Failures are reported through the job, not here. 409 SLUG_TAKEN / SLUG_CONFLICT use ErrorResponse. HTTP API Contracts §3.4.
  */
-export type SectionType =
-  "HERO" | "ABOUT" | "EXPERIENCE" | "EDUCATION" | "SKILLS" | "PROJECTS" | "CONTACT";
-/**
- * job_tasks.status, owned by Core Backend. Failure Handling Design §6.2.
- */
-export type TaskStatus = "PENDING" | "COMPLETED" | "FAILED";
+export type PublishResponse = PublishResponse1;
 /**
  * websites.status, owned by Website Service. Failure Handling Design §6.3 plus UNPUBLISHED (slug takeover, Database Architecture §5.10, Website Service).
  */
@@ -69,6 +82,11 @@ export type WebsiteStatus =
   | "PUBLISH_FAILED"
   | "PUBLISHED"
   | "UNPUBLISHED";
+/**
+ * Website draft section types. Shared Data Contracts §9.4.
+ */
+export type SectionType =
+  "HERO" | "ABOUT" | "EXPERIENCE" | "EDUCATION" | "SKILLS" | "PROJECTS" | "CONTACT";
 
 /**
  * `data` of a ABOUT section in a website draft. text from summary. Plain text only; URLs must be https. Template System Spec §5.
@@ -308,6 +326,28 @@ export interface Link {
   url: string;
 }
 /**
+ * 202 response of POST /api/jobs (multipart: cv, githubUsername?, linkedinPdf?, templateId). Accepted, not finished. HTTP API Contracts §3.1.
+ */
+export interface CreateJobResponse {
+  /**
+   * Opaque identifier. Never parse or derive meaning from it.
+   */
+  jobId: string;
+  status: "QUEUED";
+  /**
+   * @minItems 1
+   */
+  tasks: [JobTask, ...JobTask[]];
+}
+export interface JobTask {
+  /**
+   * Opaque identifier. Never parse or derive meaning from it.
+   */
+  taskId: string;
+  sourceType: SourceType;
+  status: TaskStatus;
+}
+/**
  * Output of the CV Extraction Service, key <jobId>/<taskId>/cv.json. Stored in the extraction-results bucket. Shared Data Contracts §3, §5.
  */
 export interface CVExtractionResult {
@@ -417,6 +457,43 @@ export interface EducationSectionData {
       endDate?: string;
     }[]
   ];
+}
+/**
+ * Standard error body for every HTTP error (public and internal). Communication Standards §6.4, HTTP API Contracts §6.
+ */
+export interface ErrorResponse {
+  error: {
+    code: ErrorCode;
+    /**
+     * Short, safe to show to a user. No stack traces, CV text, personal data or secrets.
+     */
+    message: string;
+    /**
+     * Value of X-Request-Id, for support and tracing.
+     */
+    requestId: string;
+    /**
+     * Field-level problems, only for 422 VALIDATION_ERROR.
+     *
+     * @minItems 1
+     */
+    details?: [
+      {
+        field: string;
+        /**
+         * Short, safe to show to a user. No stack traces, CV text, personal data or secrets.
+         */
+        message: string;
+      },
+      ...{
+        field: string;
+        /**
+         * Short, safe to show to a user. No stack traces, CV text, personal data or secrets.
+         */
+        message: string;
+      }[]
+    ];
+  };
 }
 /**
  * Shared Data Contracts §7.5.
@@ -617,6 +694,57 @@ export interface HeroSectionData {
    */
   subtitle?: string;
   links?: Link[];
+}
+/**
+ * Failure of a FAILED job, mapped from FailureInfo. Shared Data Contracts §3.3.
+ */
+export interface JobError {
+  code: ErrorCode;
+  /**
+   * Short, safe to show to a user. No stack traces, CV text, personal data or secrets.
+   */
+  message: string;
+  stage: FailureStage;
+  retryable: boolean;
+}
+export interface JobStatusResponse1 {
+  /**
+   * Opaque identifier. Never parse or derive meaning from it.
+   */
+  jobId: string;
+  status: JobStatus;
+  tasks: JobTask[];
+  /**
+   * Present once the website exists.
+   */
+  websiteId?: string;
+  /**
+   * Always present, empty by default. Skipped optional sources.
+   */
+  warnings: JobWarning[];
+  error?: JobError;
+  /**
+   * Present once published.
+   */
+  slug?: string;
+  /**
+   * Present once published.
+   */
+  url?: string;
+}
+/**
+ * A skipped optional source, stored in jobs.warnings and returned by GET /api/jobs/{jobId}. Shared Data Contracts §3.4.
+ */
+export interface JobWarning {
+  /**
+   * Only optional sources produce warnings; a CV failure fails the job.
+   */
+  sourceType: "GITHUB" | "LINKEDIN";
+  errorCode: ErrorCode;
+  /**
+   * Short, safe to show to a user. No stack traces, CV text, personal data or secrets.
+   */
+  message: string;
 }
 /**
  * Output of the LinkedIn Extraction Service, key <jobId>/<taskId>/linkedin.json. Stored in the extraction-results bucket. Shared Data Contracts §3, §6.
@@ -863,6 +991,209 @@ export interface Provenance {
   reference?: string;
 }
 /**
+ * Body of POST /api/websites/{websiteId}/publish and POST /internal/websites/{websiteId}/publish. Reserved names (www, api, admin, app) are rejected by the service. HTTP API Contracts §3.4, §7.
+ */
+export interface PublishRequest {
+  /**
+   * Subdomain slug: lowercase letters, digits and hyphens, a valid DNS label of at most 63 characters. Website Service doc.
+   */
+  slug: string;
+}
+export interface PublishResponse1 {
+  /**
+   * Opaque identifier. Never parse or derive meaning from it.
+   */
+  websiteId: string;
+  /**
+   * Subdomain slug: lowercase letters, digits and hyphens, a valid DNS label of at most 63 characters. Website Service doc.
+   */
+  slug: string;
+  status: "PUBLISHING" | "PUBLISHED";
+  /**
+   * Absolute https URL.
+   */
+  url?: string;
+}
+export interface RenderedFile {
+  /**
+   * Path relative to the site root, for example index.html or assets/style.css. No leading slash, no '..'.
+   */
+  path: string;
+  contentType: string;
+  contentBase64: string;
+}
+/**
+ * Website Publisher -> render worker: POST /render locally (HMAC-signed), Lambda invoke payload on AWS (IAM). The whole request must stay under the 6 MB Lambda payload limit. Template System Spec §6, FE-33.
+ */
+export interface RenderRequest {
+  draft: WebsiteDraft;
+  /**
+   * Readable template id, for example classic (Template System Spec §4).
+   */
+  templateId: string;
+  /**
+   * Semantic version, for example 1.0.0.
+   */
+  templateVersion: string;
+}
+/**
+ * Generated website content, stored in websites.draft_content (JSONB). The database columns (template_id, template_version, status) are authoritative; the ids here are informational. Shared Data Contracts §9, Template System Spec §5.
+ */
+export interface WebsiteDraft {
+  /**
+   * Major contract version. All MVP events use 1.
+   */
+  schemaVersion: 1;
+  /**
+   * Opaque identifier. Never parse or derive meaning from it.
+   */
+  websiteId?: string;
+  /**
+   * Opaque identifier. Never parse or derive meaning from it.
+   */
+  profileId?: string;
+  /**
+   * Readable template id, for example classic (Template System Spec §4).
+   */
+  templateId?: string;
+  /**
+   * Semantic version, for example 1.0.0.
+   */
+  templateVersion?: string;
+  status?: WebsiteStatus;
+  content: WebsiteContent;
+}
+/**
+ * The ordered sections of the site.
+ */
+export interface WebsiteContent {
+  /**
+   * Ordered sections. Section ids must be unique within the draft (checked by the generator, not expressible in JSON Schema).
+   *
+   * @minItems 1
+   *
+   * Items: One section: id, type and the data schema for that type.
+   */
+  sections: [
+    (
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "HERO";
+          data: HeroSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "ABOUT";
+          data: AboutSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "EXPERIENCE";
+          data: ExperienceSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "EDUCATION";
+          data: EducationSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "SKILLS";
+          data: SkillsSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "PROJECTS";
+          data: ProjectsSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "CONTACT";
+          data: ContactSectionData;
+        }
+    ),
+    ...(
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "HERO";
+          data: HeroSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "ABOUT";
+          data: AboutSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "EXPERIENCE";
+          data: ExperienceSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "EDUCATION";
+          data: EducationSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "SKILLS";
+          data: SkillsSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "PROJECTS";
+          data: ProjectsSectionData;
+        }
+      | {
+          /**
+           * Unique section id within the draft, for example hero.
+           */
+          id: string;
+          type: "CONTACT";
+          data: ContactSectionData;
+        }
+    )[]
+  ];
+}
+/**
  * `data` of a SKILLS section in a website draft. From skills. Plain text only; URLs must be https. Template System Spec §5.
  */
 export interface SkillsSectionData {
@@ -884,6 +1215,51 @@ export interface SkillsSectionData {
      */
     items: [string, ...string[]];
   }[];
+}
+/**
+ * Render worker -> Website Publisher: the static files to upload under published-websites/<slug>/ (index.html last). Response limit 6 MB (Lambda); larger output fails with 500 PUBLISH_ASSET_ERROR. Errors use ErrorResponse: 422 VALIDATION_ERROR (invalid draft), 404 NOT_FOUND (unknown template or version), 500 PUBLISH_ASSET_ERROR.
+ */
+export interface RenderResponse {
+  /**
+   * @minItems 1
+   */
+  files: [RenderedFile, ...RenderedFile[]];
+  /**
+   * Semantic version, for example 1.0.0.
+   */
+  rendererVersion?: string;
+}
+/**
+ * 200 response of GET /api/templates, served from registry.json. Template System Spec §7.
+ */
+export interface TemplateListResponse {
+  templates: TemplateSummary[];
+}
+export interface TemplateSummary {
+  /**
+   * Readable template id, for example classic (Template System Spec §4).
+   */
+  id: string;
+  /**
+   * Semantic version, for example 1.0.0.
+   */
+  version: string;
+  /**
+   * Plain text (no HTML or Markdown; the renderer escapes everything).
+   */
+  name: string;
+  /**
+   * Plain text (no HTML or Markdown; the renderer escapes everything).
+   */
+  description: string;
+  /**
+   * Absolute https URL.
+   */
+  thumbnailUrl: string;
+  sections: {
+    required: SectionType[];
+    optional: SectionType[];
+  };
 }
 /**
  * template.json of a website template package (packages/templates/<id>/). Template System Spec §4.
@@ -956,159 +1332,6 @@ export interface UnifiedProfile {
   sourceTypes: [SourceType, ...SourceType[]];
   profile: CanonicalProfessionalProfile;
   provenance?: Provenance[];
-}
-/**
- * Generated website content, stored in websites.draft_content (JSONB). The database columns (template_id, template_version, status) are authoritative; the ids here are informational. Shared Data Contracts §9, Template System Spec §5.
- */
-export interface WebsiteDraft {
-  /**
-   * Major contract version. All MVP events use 1.
-   */
-  schemaVersion: 1;
-  /**
-   * Opaque identifier. Never parse or derive meaning from it.
-   */
-  websiteId?: string;
-  /**
-   * Opaque identifier. Never parse or derive meaning from it.
-   */
-  profileId?: string;
-  /**
-   * Readable template id, for example classic (Template System Spec §4).
-   */
-  templateId?: string;
-  /**
-   * Semantic version, for example 1.0.0.
-   */
-  templateVersion?: string;
-  status?: WebsiteStatus;
-  content: {
-    /**
-     * Ordered sections. Section ids must be unique within the draft (checked by the generator, not expressible in JSON Schema).
-     *
-     * @minItems 1
-     *
-     * Items: One section: id, type and the data schema for that type.
-     */
-    sections: [
-      (
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "HERO";
-            data: HeroSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "ABOUT";
-            data: AboutSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "EXPERIENCE";
-            data: ExperienceSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "EDUCATION";
-            data: EducationSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "SKILLS";
-            data: SkillsSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "PROJECTS";
-            data: ProjectsSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "CONTACT";
-            data: ContactSectionData;
-          }
-      ),
-      ...(
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "HERO";
-            data: HeroSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "ABOUT";
-            data: AboutSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "EXPERIENCE";
-            data: ExperienceSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "EDUCATION";
-            data: EducationSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "SKILLS";
-            data: SkillsSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "PROJECTS";
-            data: ProjectsSectionData;
-          }
-        | {
-            /**
-             * Unique section id within the draft, for example hero.
-             */
-            id: string;
-            type: "CONTACT";
-            data: ContactSectionData;
-          }
-      )[]
-    ];
-  };
 }
 /**
  * Queue `processing-results`. Producer: Website Service (Generator or Publisher). Consumer: Core Backend (Job Orchestrator). SQS Event Contracts §6.5; Failure Handling Design §3.3.
@@ -1196,6 +1419,70 @@ export interface WebsiteGenerated {
    */
   websiteId: string;
   status: "PREVIEW_READY";
+}
+/**
+ * 200 response of GET /api/websites (My sites): the caller's websites, newest first. HTTP API Contracts §3.6, BE-25.
+ */
+export interface WebsiteListResponse {
+  websites: WebsiteSummary[];
+}
+export interface WebsiteSummary {
+  /**
+   * Opaque identifier. Never parse or derive meaning from it.
+   */
+  websiteId: string;
+  /**
+   * Opaque identifier. Never parse or derive meaning from it.
+   */
+  jobId: string;
+  status: WebsiteStatus;
+  /**
+   * Readable template id, for example classic (Template System Spec §4).
+   */
+  templateId: string;
+  /**
+   * Present once a slug is reserved.
+   */
+  slug?: string;
+  /**
+   * Present once published.
+   */
+  url?: string;
+  /**
+   * UTC RFC 3339 timestamp, for example 2026-11-17T14:30:00Z.
+   */
+  createdAt: string;
+  /**
+   * UTC RFC 3339 timestamp, for example 2026-11-17T14:30:00Z.
+   */
+  updatedAt: string;
+}
+/**
+ * 200 response of GET /api/websites/{websiteId}/preview and GET /internal/websites/{websiteId}/preview: the stored draft's fields at the top level plus the authoritative websites columns. Flat, never wrapped in a `draft` key. Shared Data Contracts §9.3.
+ */
+export interface WebsitePreview {
+  /**
+   * Major contract version. All MVP events use 1.
+   */
+  schemaVersion: 1;
+  /**
+   * Opaque identifier. Never parse or derive meaning from it.
+   */
+  websiteId: string;
+  /**
+   * Opaque identifier. Never parse or derive meaning from it.
+   */
+  profileId: string;
+  /**
+   * Readable template id, for example classic (Template System Spec §4).
+   */
+  templateId: string;
+  /**
+   * Semantic version, for example 1.0.0.
+   */
+  templateVersion: string;
+  status: WebsiteStatus;
+  content: WebsiteContent;
 }
 /**
  * Queue `processing-results`. Producer: Website Service (Website Publisher). Consumer: Core Backend. SQS Event Contracts §6.4.
