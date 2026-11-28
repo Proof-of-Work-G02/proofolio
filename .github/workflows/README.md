@@ -11,7 +11,7 @@ status check to require on `main`.
 | `contracts` | `contracts/**`, `scripts/dev.py`, `Makefile` | `make contracts-setup contracts-check contracts-breaking` |
 | `compose-smoke` | `infra/compose/**`, `scripts/dev.py`, `Makefile`, `.env.example`, migrations | `make up smoke` |
 | `frontend-ci` | `apps/frontend/**`, `packages/**`, `services/render-worker/**`, `contracts/**` | placeholder until FE-21 |
-| `backend-ci` | `services/core-backend/**`, `services/website-service/**`, `contracts/**` | placeholder until BE-9 |
+| `backend-ci` | `services/core-backend/**`, `services/website-service/**`, `contracts/**` | Core Backend lint, type checks and tests |
 | `ai-ci` | the three AI services, `services/_shared/**`, `contracts/**` | placeholder until AI-7 |
 | `renderer-parity` | `packages/**`, `services/render-worker/**`, `services/website-service/**` | placeholder until FE-33 |
 | `terraform` | `infra/terraform/**` | placeholder until KAN-10 |

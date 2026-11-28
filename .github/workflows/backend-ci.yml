@@ -1,4 +1,4 @@
-# Backend checks: ruff, mypy, pytest (unit and integration against the Compose stack).
+# Backend checks: ruff, mypy, pytest.
 #
 # Path-filtered (KAN-9): the real work only runs when the paths below change, but the
 # job named "backend-ci" always runs and reports, so a required check never waits forever.
@@ -29,7 +29,10 @@ jobs:
             run:
               - 'services/core-backend/**'
               - 'services/website-service/**'
+              - 'services/_shared/python/**'
               - 'contracts/**'
+              - 'scripts/dev.py'
+              - '.env.example'
               - '.github/workflows/backend-ci.yml'
   run:
     name: backend-ci (run)
@@ -37,7 +40,14 @@ jobs:
     if: needs.changes.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Placeholder. Replaced by BE-9 once the backend services have code."
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install Core Backend and test tools
+        run: python -m pip install ./services/_shared/python './services/core-backend[dev]'
+      - name: Lint, type-check and test Core Backend
+        run: python scripts/dev.py backend-test
   backend-ci:
     needs: [changes, run]
     if: always()
