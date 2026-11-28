@@ -16,7 +16,8 @@
     python scripts/dev.py contracts-breaking  breaking-change check against origin/main
 
   CI (KAN-9):
-    python scripts/dev.py test                what the CI checks run, minus Docker: contracts-check + contracts-breaking
+    python scripts/dev.py test                contracts and Core Backend checks
+    python scripts/dev.py backend-test        Core Backend lint, type checks and tests
                                               (add `smoke` after `up` for the compose-smoke check)
 
 Uses .env when it exists, otherwise .env.example. Only needs Python 3.10+ and Docker.
@@ -144,9 +145,16 @@ def cmd_contracts_check() -> None:
 
 
 def cmd_test() -> None:
-    # Same as CI's contracts job. The service checks join here as the teams add them (BE-9, FE-21, AI-7).
     cmd_contracts_check()
     node("breaking-check.mjs")
+    cmd_backend_test()
+
+
+def cmd_backend_test() -> None:
+    service = ROOT / "services" / "core-backend"
+    run([sys.executable, "-m", "ruff", "check", "."], cwd=service)
+    run([sys.executable, "-m", "mypy"], cwd=service)
+    run([sys.executable, "-m", "pytest"], cwd=service)
 
 
 COMMANDS = {
@@ -163,6 +171,7 @@ COMMANDS = {
     "contracts-check": cmd_contracts_check,
     "contracts-breaking": lambda: node("breaking-check.mjs", *sys.argv[2:]),
     "test": cmd_test,
+    "backend-test": cmd_backend_test,
 }
 DOCKER_COMMANDS = {"up", "down", "smoke", "reset", "ps", "logs"}
 
